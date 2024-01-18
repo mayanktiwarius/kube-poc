@@ -24,6 +24,45 @@ Vagrant.configure("2") do |config|
   end
   config.vm.box_check_update = true
 
+  config.vm.define "acm" do |acm|
+    acm.vm.hostname = "acm-node"
+    #acm.ssh.private_key_path = "~/.ssh/id_rsa"
+    acm.vm.network "private_network", ip: settings["network"]["control_ip"]
+    if settings["shared_folders"]
+      settings["shared_folders"].each do |shared_folder|
+        acm.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
+      end
+    end
+#     # Provision ACM node to generate SSH keys
+#     acm.vm.provision "shell" do |shell|
+#       shell.inline = <<-SCRIPT
+#         mkdir -p /vagrant/ssh-keys
+#         ssh-keygen -t rsa -b 2048 -N "" -f /vagrant/ssh-keys/acm_key
+#       SCRIPT
+#     end
+    acm.vm.provider "virtualbox" do |vb|
+        vb.cpus = settings["nodes"]["acm"]["cpu"]
+        vb.memory = settings["nodes"]["acm"]["memory"]
+        if settings["cluster_name"] and settings["cluster_name"] != ""
+          vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+        end
+    end
+#     # Provision ACM node with private key
+#     master.vm.provision "shell" do |shell|
+#       shell.inline = <<-SCRIPT
+#         mkdir -p /home/vagrant/.ssh
+#         cp /vagrant/ssh-keys/acm_key /home/vagrant/.ssh/id_rsa
+#         chown -R vagrant:vagrant /home/vagrant/.ssh
+#         chmod 600 /home/vagrant/.ssh/id_rsa
+#       SCRIPT
+#     end
+    acm.vm.provision "shell", inline: <<-SHELL
+#      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+      echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+      cp /vagrant/keys/id_rsa ~/.ssh/
+    SHELL
+  end
+
   config.vm.define "master" do |master|
     master.vm.hostname = "master-node"
     master.vm.network "private_network", ip: settings["network"]["control_ip"]
@@ -39,22 +78,35 @@ Vagrant.configure("2") do |config|
           vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
         end
     end
-    master.vm.provision "shell",
-      env: {
-        "DNS_SERVERS" => settings["network"]["dns_servers"].join(" "),
-        "ENVIRONMENT" => settings["environment"],
-        "KUBERNETES_VERSION" => settings["software"]["kubernetes"],
-        "OS" => settings["software"]["os"]
-      },
-      path: "scripts/common.sh"
-    master.vm.provision "shell",
-      env: {
-        "CALICO_VERSION" => settings["software"]["calico"],
-        "CONTROL_IP" => settings["network"]["control_ip"],
-        "POD_CIDR" => settings["network"]["pod_cidr"],
-        "SERVICE_CIDR" => settings["network"]["service_cidr"]
-      },
-      path: "scripts/master.sh"
+#     master.vm.provision "shell",
+#       env: {
+#         "DNS_SERVERS" => settings["network"]["dns_servers"].join(" "),
+#         "ENVIRONMENT" => settings["environment"],
+#         "KUBERNETES_VERSION" => settings["software"]["kubernetes"],
+#         "OS" => settings["software"]["os"]
+#       },
+#       path: "scripts/common.sh"
+#     master.vm.provision "shell",
+#       env: {
+#         "CALICO_VERSION" => settings["software"]["calico"],
+#         "CONTROL_IP" => settings["network"]["control_ip"],
+#         "POD_CIDR" => settings["network"]["pod_cidr"],
+#         "SERVICE_CIDR" => settings["network"]["service_cidr"]
+#       },
+#       path: "scripts/master.sh"
+#       # Provision master node with public key
+#       master.vm.provision "shell" do |shell|
+#         shell.inline = <<-SCRIPT
+#           mkdir -p /home/vagrant/.ssh
+#           cp /vagrant/ssh-keys/acm_key.pub /home/vagrant/.ssh/authorized_keys
+#           chown -R vagrant:vagrant /home/vagrant/.ssh
+#         SCRIPT
+#       end
+    master.vm.provision "shell", inline: <<-SHELL
+#      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+      echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+      cp /vagrant/keys/id_rsa ~/.ssh/
+    SHELL
   end
 
   (1..NUM_WORKER_NODES).each do |i|
@@ -74,15 +126,28 @@ Vagrant.configure("2") do |config|
             vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
           end
       end
-      node.vm.provision "shell",
-        env: {
-          "DNS_SERVERS" => settings["network"]["dns_servers"].join(" "),
-          "ENVIRONMENT" => settings["environment"],
-          "KUBERNETES_VERSION" => settings["software"]["kubernetes"],
-          "OS" => settings["software"]["os"]
-        },
-        path: "scripts/common.sh"
-      node.vm.provision "shell", path: "scripts/node.sh"
+#       node.vm.provision "shell",
+#         env: {
+#           "DNS_SERVERS" => settings["network"]["dns_servers"].join(" "),
+#           "ENVIRONMENT" => settings["environment"],
+#           "KUBERNETES_VERSION" => settings["software"]["kubernetes"],
+#           "OS" => settings["software"]["os"]
+#         },
+#         path: "scripts/common.sh"
+#       node.vm.provision "shell", path: "scripts/node.sh"
+#       # Provision master node with public key
+#       node.vm.provision "shell" do |shell|
+#         shell.inline = <<-SCRIPT
+#           mkdir -p /home/vagrant/.ssh
+#           cp /vagrant/ssh-keys/acm_key.pub /home/vagrant/.ssh/authorized_keys
+#           chown -R vagrant:vagrant /home/vagrant/.ssh
+#         SCRIPT
+#       end
+        node.vm.provision "shell", inline: <<-SHELL
+    #      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+          echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+          cp /vagrant/keys/id_rsa ~/.ssh/
+        SHELL
     end
 
   end
