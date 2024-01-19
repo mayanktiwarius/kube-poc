@@ -1,0 +1,96 @@
+---
+- name: Common setup for all servers
+  hosts: all
+  become: true
+
+  tasks:
+    - name: DNS Setting
+      file:
+        path: "/etc/systemd/resolved.conf.d/dns_servers.conf"
+        state: touch
+      when: not ("dns_servers" in omit_var_names)
+      vars:
+        DNS_SERVERS: "{{ dns_servers | default('8.8.8.8 8.8.4.4') }}"
+      blockinfile:
+        path: "/etc/systemd/resolved.conf.d/dns_servers.conf"
+        insertafter: "^\\[Resolve\\]"
+        block: |
+          DNS={{ DNS_SERVERS }}
+      notify:
+        - restart systemd-resolved
+
+    - name: Disable Swap
+      command: "{{ item }}"
+      with_items:
+        - "sudo swapoff -a"
+        - "(crontab -l 2>/dev/null; echo '@reboot /sbin/swapoff -a') | crontab -"
+      notify:
+        - restart systemd-resolved
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install CRI-O Runtime
+      include_tasks: cri-o-installation.yml
+
+    - name: Install Kubernetes components
+      include_tasks: kubernetes-installation.yml
+
+    - name: Set up sysctl params
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      loop:
+        - { name: "net.bridge.bridge-nf-call-iptables", value: 1 }
+        - { name: "net.ipv4.ip_forward", value: 1 }
+        - { name: "net.bridge.bridge-nf-call-ip6tables", value: 1 }
+
+    - name: Add Kubernetes apt repository
+      apt_repository:
+        repo: "{{ item.repo }}"
+        state: present
+        filename: "{{ item.filename }}"
+      loop:
+        - { repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ansible_distribution | lower }}/", filename: "devel:kubic:libcontainers:stable.list" }
+        - { repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ kubernetes_version | regex_replace('\\.', '') }}/{{ ansible_distribution | lower }}/", filename: "devel:kubic:libcontainers:stable:cri-o:{{ kubernetes_version | regex_replace('\\.', '') }}.list" }
+
+    - name: Import the GPG key for Kubernetes
+      apt_key:
+        url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+        state: present
+
+    - name: Install Kubernetes packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - kubelet
+        - kubectl
+        - kubeadm
+      notify:
+        - restart systemd-resolved
+
+    - name: Install jq
+      apt:
+        name: jq
+        state: present
+
+    - name: Get local IP address
+      command: "ip --json a s"
+      register: ip_result
+      ignore_errors: true
+
+    - name: Set kubelet node IP
+      copy:
+        dest: "/etc/default/kubelet"
+        content: |
+          KUBELET_EXTRA_ARGS=--node-ip={{ ip_result.stdout | from_json | json_query(query) | first | default('') }}
+    when: ip_result is succeeded
+    vars:
+      query: "[?ifname=='eth1'].addr_info[?family=='inet'].local | [0]"
+
+- name: restart systemd-resolved
+  meta: flush_handlers

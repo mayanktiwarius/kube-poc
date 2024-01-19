@@ -1,0 +1,49 @@
+---
+- name: Install and Configure Kubernetes on Master Nodes
+  hosts: master
+  become: true
+
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Add Kubernetes apt repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: 'kubernetes'
+
+    - name: Install Kubernetes components
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubeadm
+        - kubelet
+        - kubectl
+
+    - name: Initialize Kubernetes master
+      command: kubeadm init --apiserver-advertise-address=192.168.56.10 --pod-network-cidr=10.244.0.0/16
+      args:
+        creates: /etc/kubernetes/admin.conf
+      become_user: vagrant
+
+    - name: Copy kubeconfig to user's home directory
+      command: cp /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+      args:
+        creates: /home/vagrant/.kube/config
+      become_user: vagrant
+
+    - name: Install Calico network plugin
+      command: kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
+      become_user: vagrant
+
+    - name: Display kubeadm join command for worker nodes
+      command: kubeadm token create --print-join-command
+      become_user: vagrant
+      register: join_command
+
+    - debug:
+        var: join_command.stdout_lines

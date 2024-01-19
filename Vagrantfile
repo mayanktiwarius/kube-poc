@@ -91,8 +91,25 @@ Vagrant.configure("2") do |config|
         else
             echo "Timeout waiting for source file."
         fi
+        # Create ansible working folder
+        mkdir /home/vagrant/ansible
+        cp -r /vagrant/ansible /home/vagrant/ansible
       SCRIPT
     end
+    acm.vm.provision "shell", inline: <<-SHELL
+      # Update package index
+      sudo apt-get update
+
+      # Install Ansible
+      sudo apt-get install -y ansible
+
+      # Install python3 and pip3 (required by Ansible)
+      sudo apt-get install -y python3 python3-pip
+
+      # Install additional Ansible dependencies (optional)
+      pip3 install wheel
+      pip3 install ansible-lint
+    SHELL
   end
 
   config.vm.define "master" do |master|

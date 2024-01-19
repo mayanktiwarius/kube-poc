@@ -1,0 +1,25 @@
+---
+- name: Install and Configure Kubernetes on Worker Nodes
+  hosts: workers
+  become: true
+
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Add Kubernetes apt repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: 'kubernetes'
+
+    - name: Install Kubernetes components
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubeadm
+        - kubelet
+        - kubectl
