@@ -11,9 +11,11 @@ NUM_WORKER_NODES = settings["nodes"]["workers"]["count"]
 Vagrant.configure("2") do |config|
   config.vm.provision "shell", env: { "IP_NW" => IP_NW, "IP_START" => IP_START, "NUM_WORKER_NODES" => NUM_WORKER_NODES }, inline: <<-SHELL
       apt-get update -y
+
       echo "$IP_NW$((IP_START)) master-node" >> /etc/hosts
+      echo "$IP_NW$((IP_START+1)) acm-node" >> /etc/hosts
       for i in `seq 1 ${NUM_WORKER_NODES}`; do
-        echo "$IP_NW$((IP_START+i)) worker-node0${i}" >> /etc/hosts
+        echo "$IP_NW$((IP_START+i+1)) worker-node0${i}" >> /etc/hosts
       done
   SHELL
 
@@ -27,7 +29,8 @@ Vagrant.configure("2") do |config|
   config.vm.define "acm" do |acm|
     acm.vm.hostname = "acm-node"
     #acm.ssh.private_key_path = "~/.ssh/id_rsa"
-    acm.vm.network "private_network", ip: settings["network"]["control_ip"]
+    #acm.vm.network "private_network", ip: settings["network"]["control_ip"]
+    acm.vm.network "private_network", ip: IP_NW + "#{IP_START + 1}"
     if settings["shared_folders"]
       settings["shared_folders"].each do |shared_folder|
         acm.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
@@ -57,7 +60,6 @@ Vagrant.configure("2") do |config|
 #       SCRIPT
 #     end
     acm.vm.provision "shell", inline: <<-SHELL
-#      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
       echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
       cp /vagrant/keys/id_rsa ~/.ssh/
     SHELL
@@ -103,7 +105,6 @@ Vagrant.configure("2") do |config|
 #         SCRIPT
 #       end
     master.vm.provision "shell", inline: <<-SHELL
-#      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
       echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
       cp /vagrant/keys/id_rsa ~/.ssh/
     SHELL
@@ -113,7 +114,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "node0#{i}" do |node|
       node.vm.hostname = "worker-node0#{i}"
-      node.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
+      node.vm.network "private_network", ip: IP_NW + "#{IP_START + i + 1}"
       if settings["shared_folders"]
         settings["shared_folders"].each do |shared_folder|
           node.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
@@ -144,7 +145,6 @@ Vagrant.configure("2") do |config|
 #         SCRIPT
 #       end
         node.vm.provision "shell", inline: <<-SHELL
-    #      echo "$(cat #{base_path}/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
           echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
           cp /vagrant/keys/id_rsa ~/.ssh/
         SHELL
