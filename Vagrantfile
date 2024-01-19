@@ -59,10 +59,40 @@ Vagrant.configure("2") do |config|
 #         chmod 600 /home/vagrant/.ssh/id_rsa
 #       SCRIPT
 #     end
-    acm.vm.provision "shell", inline: <<-SHELL
-      echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
-      cp /vagrant/keys/id_rsa ~/.ssh/
-    SHELL
+#     acm.vm.provision "shell", inline: <<-SHELL
+#       echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+#       cp /vagrant/keys/id_rsa ~/.ssh/
+#     SHELL
+    acm.vm.provision "shell" do |shell|
+      shell.inline = <<-SCRIPT
+        #!/bin/bash
+
+        source_file="/vagrant/keys/id_rsa.pub"
+        target_dir="/home/vagrant/.ssh/"
+        target_authorized_keys="${target_dir}/authorized_keys"
+        target_id_rsa="${target_dir}/id_rsa"
+
+        # Wait for the source file to appear for up to 1 minute
+        timeout=$((SECONDS + 60))
+        while [ ! -e "$source_file" ] && [ $SECONDS -lt $timeout ]; do
+            sleep 1
+        done
+
+        # Check if the source file exists
+        if [ -e "$source_file" ]; then
+            # Append the content of id_rsa.pub to authorized_keys
+            cat "$source_file" >> "$target_authorized_keys"
+
+            # Copy id_rsa to ~/.ssh/
+            cp "${source_file%.*}" "$target_id_rsa"
+            chown vagrant:vagrant "${target_id_rsa}"
+
+            echo "Copy successful!"
+        else
+            echo "Timeout waiting for source file."
+        fi
+      SCRIPT
+    end
   end
 
   config.vm.define "master" do |master|
@@ -104,10 +134,40 @@ Vagrant.configure("2") do |config|
 #           chown -R vagrant:vagrant /home/vagrant/.ssh
 #         SCRIPT
 #       end
-    master.vm.provision "shell", inline: <<-SHELL
-      echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
-      cp /vagrant/keys/id_rsa ~/.ssh/
-    SHELL
+#     master.vm.provision "shell", inline: <<-SHELL
+#       echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+#       cp /vagrant/keys/id_rsa ~/.ssh/
+#     SHELL
+    master.vm.provision "shell" do |shell|
+      shell.inline = <<-SCRIPT
+        #!/bin/bash
+
+        source_file="/vagrant/keys/id_rsa.pub"
+        target_dir="/home/vagrant/.ssh/"
+        target_authorized_keys="${target_dir}/authorized_keys"
+        target_id_rsa="${target_dir}/id_rsa"
+
+        # Wait for the source file to appear for up to 1 minute
+        timeout=$((SECONDS + 60))
+        while [ ! -e "$source_file" ] && [ $SECONDS -lt $timeout ]; do
+            sleep 1
+        done
+
+        # Check if the source file exists
+        if [ -e "$source_file" ]; then
+            # Append the content of id_rsa.pub to authorized_keys
+            cat "$source_file" >> "$target_authorized_keys"
+
+            # Copy id_rsa to ~/.ssh/
+            cp "${source_file%.*}" "$target_id_rsa"
+            chown vagrant:vagrant "${target_id_rsa}"
+
+            echo "Copy successful!"
+        else
+            echo "Timeout waiting for source file."
+        fi
+      SCRIPT
+    end
   end
 
   (1..NUM_WORKER_NODES).each do |i|
@@ -144,10 +204,40 @@ Vagrant.configure("2") do |config|
 #           chown -R vagrant:vagrant /home/vagrant/.ssh
 #         SCRIPT
 #       end
-        node.vm.provision "shell", inline: <<-SHELL
-          echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
-          cp /vagrant/keys/id_rsa ~/.ssh/
-        SHELL
+#         node.vm.provision "shell", inline: <<-SHELL
+#           echo "$(cat /vagrant/keys/id_rsa.pub)" >> /home/vagrant/.ssh/authorized_keys
+#           cp /vagrant/keys/id_rsa ~/.ssh/
+#         SHELL
+        node.vm.provision "shell" do |shell|
+          shell.inline = <<-SCRIPT
+            #!/bin/bash
+
+            source_file="/vagrant/keys/id_rsa.pub"
+            target_dir="/home/vagrant/.ssh/"
+            target_authorized_keys="${target_dir}/authorized_keys"
+            target_id_rsa="${target_dir}/id_rsa"
+
+            # Wait for the source file to appear for up to 1 minute
+            timeout=$((SECONDS + 60))
+            while [ ! -e "$source_file" ] && [ $SECONDS -lt $timeout ]; do
+                sleep 1
+            done
+
+            # Check if the source file exists
+            if [ -e "$source_file" ]; then
+                # Append the content of id_rsa.pub to authorized_keys
+                cat "$source_file" >> "$target_authorized_keys"
+
+                # Copy id_rsa to ~/.ssh/
+                cp "${source_file%.*}" "$target_id_rsa"
+                chown vagrant:vagrant "${target_id_rsa}"
+
+                echo "Copy successful!"
+            else
+                echo "Timeout waiting for source file."
+            fi
+          SCRIPT
+        end
     end
 
   end
