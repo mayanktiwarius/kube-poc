@@ -86,6 +86,7 @@ Vagrant.configure("2") do |config|
             # Copy id_rsa to ~/.ssh/
             cp "${source_file%.*}" "$target_id_rsa"
             chown vagrant:vagrant "${target_id_rsa}"
+            chmod 600 "${target_id_rsa}"
 
             echo "Copy successful!"
         else
@@ -178,6 +179,7 @@ Vagrant.configure("2") do |config|
             # Copy id_rsa to ~/.ssh/
             cp "${source_file%.*}" "$target_id_rsa"
             chown vagrant:vagrant "${target_id_rsa}"
+            chmod 600 "${target_id_rsa}"
 
             echo "Copy successful!"
         else
@@ -248,6 +250,7 @@ Vagrant.configure("2") do |config|
                 # Copy id_rsa to ~/.ssh/
                 cp "${source_file%.*}" "$target_id_rsa"
                 chown vagrant:vagrant "${target_id_rsa}"
+                chmod 600 "${target_id_rsa}"
 
                 echo "Copy successful!"
             else

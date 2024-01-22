@@ -81,7 +81,9 @@
   - name: Configure node ip
     lineinfile:
       path: /etc/default/kubelet
-      line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+      # line: KUBELET_EXTRA_ARGS=--node-ip={{ ansible_ssh_host }}
+      line: KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}
+      create: yes
 
   - name: Restart kubelet
     service:
@@ -93,7 +95,7 @@
 #Here on applicable only on master
   - name: Initialize the Kubernetes cluster using kubeadm
 #    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
-    command: kubeadm init --apiserver-advertise-address=$CONTROL_IP --apiserver-cert-extra-sans=$CONTROL_IP --pod-network-cidr=$POD_CIDR --service-cidr=$SERVICE_CIDR --node-name "$NODENAME" --ignore-preflight-errors Swap
+    command: kubeadm init --apiserver-advertise-address={{ network.control_ip }} --apiserver-cert-extra-sans={{ network.control_ip }} --pod-network-cidr={{ network.pod_cidr }} --service-cidr={{ network.service_cidr }} --node-name {{ inventory_hostname }} --ignore-preflight-errors Swap
 
   - name: Setup kubeconfig for vagrant user
     command: "{{ item }}"
