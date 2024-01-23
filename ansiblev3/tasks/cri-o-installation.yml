@@ -1,0 +1,44 @@
+---
+- name: Install CRI-O Runtime
+  block:
+    - name: Create the .conf file to load the modules at bootup
+      copy:
+        dest: "/etc/modules-load.d/crio.conf"
+        content: |
+          overlay
+          br_netfilter
+      notify:
+        - restart systemd-resolved
+
+    - name: Load required kernel modules
+      modprobe:
+        name: "{{ item }}"
+      with_items:
+        - overlay
+        - br_netfilter
+
+    - name: Set up sysctl params for CRI-O
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      loop:
+        - { name: "net.bridge.bridge-nf-call-iptables", value: 1 }
+        - { name: "net.ipv4.ip_forward", value: 1 }
+        - { name: "net.bridge.bridge-nf-call-ip6tables", value: 1 }
+
+    - name: Add CRI-O apt repository
+      apt_repository:
+        repo: "{{ item.repo }}"
+        state: present
+        filename: "{{ item.filename }}"
+      loop:
+        - { repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ansible_distribution | lower }}/", filename: "devel:kubic:libcontainers:stable.list" }
+        - { repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ kubernetes_version | regex_replace('\\.', '') }}/{{ ansible_distribution | lower }}/", filename: "devel:kubic:libcontainers:stable:cri-o:{{ kubernetes_version | regex_replace('\\.', '') }}.list" }
+
+    - name: Import the GPG key for CRI-O
+      apt_key:
+        url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/Release.key"
+        state: present
+  tags: cri-o
