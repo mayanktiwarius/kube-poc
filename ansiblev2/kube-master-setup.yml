@@ -267,48 +267,56 @@
         path: "{{ lookup('env', 'HOME') }}/.kube"
         state: directory
 
-    # - name: Copy admin.conf to user's .kube directory
-    #   command: >
-    #     sudo cp -i /etc/kubernetes/admin.conf "{{ lookup('env', 'HOME') }}/.kube/config"
-    #   become_user: "{{ lookup('env', 'USER') }}"
-
     - name: Copy admin.conf to user's .kube directory
       command: >
-        cp -i /etc/kubernetes/admin.conf "{{ lookup('env', 'HOME') }}/.kube/config"
-      become_user: root
+        sudo cp -f /etc/kubernetes/admin.conf "{{ lookup('env', 'HOME') }}/.kube/config"
+      become_user: "{{ lookup('env', 'USER') }}"
 
     - name: Set ownership of .kube/config
       command: >
         sudo chown "{{ lookup('env', 'USER') }}":"{{ lookup('env', 'USER') }}" "{{ lookup('env', 'HOME') }}/.kube/config"
 
-    - name: Ensure configs directory exists or clean it up
-      file:
-        path: "{{ config_path }}"
-        state: directory
-        recurse: yes
-      register: config_dir
+    # - name: Ensure configs directory exists or clean it up
+    #   file:
+    #     path: "{{ config_path }}"
+    #     state: directory
+    #     recurse: yes
+    #   register: config_dir
 
     - name: Copy admin.conf to configs directory
-      command: "cp -i /etc/kubernetes/admin.conf {{ config_path }}/config"
-      when: config_dir.stat.exists
+      command: "cp -f /etc/kubernetes/admin.conf {{ config_path }}/config"
+      # when: config_dir.results[0].stat.exists 
       become_user: root
 
     - name: Create join.sh script
       command: "touch {{ config_path }}/join.sh && chmod +x {{ config_path }}/join.sh"
-      become_user: root
+      # become_user: root
+
+    # - name: Generate kubeadm join command and save to join.sh
+    #   command: "kubeadm token create --print-join-command > {{ config_path }}/join.sh"
+    #   # become_user: root
 
     - name: Generate kubeadm join command and save to join.sh
-      command: "kubeadm token create --print-join-command > {{ config_path }}/join.sh"
-      become_user: root
+      shell:
+        cmd: "kubeadm token create --print-join-command > {{ config_path }}/join.sh"
+      args:
+        executable: /bin/bash
 
     - name: Download Calico manifest
       get_url:
-        url: "https://raw.githubusercontent.com/projectcalico/calico/{{ software.calico }}/manifests/calico.yaml"
+        url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
         dest: "{{ config_path }}/calico.yaml"
+
+    - name: Check Kubernetes API server status
+      shell: kubectl cluster-info
+      register: cluster_info
+      until: "'Kubernetes control plane is running' in cluster_info.stdout"
+      retries: 6
+      delay: 10
 
     - name: Apply Calico Network Plugin
       command: "kubectl apply -f {{ config_path }}/calico.yaml"
-      become_user: root
+      # become_user: root
 
     - name: Set up user-specific kubeconfig
       blockinfile:

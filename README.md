@@ -26,3 +26,11 @@ vagrant ssh master
 Connecet to worker:
 vagrant ssh node1
 vagrant ssh node2
+
+
+Kube installation:
+connect to acm:
+vagrant ssh acm
+/vagrant/ansiblev2
+ansible-playbook -i ./inventory/inventory.ini -e @/vagrant/settings.yaml kube-master-setup.yml
+
