@@ -239,3 +239,80 @@
           KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}
           {{ environment }}
         create: yes
+
+
+- name: Installation steps for master
+  hosts: master
+  become: true
+  vars:
+    config_path: "/vagrant/configs"
+  tasks:
+    - name: Pull Kubernetes images
+      command: kubeadm config images pull
+      become_user: root
+
+    - name: Run kubeadm init
+      command: >
+        kubeadm init
+        --apiserver-advertise-address={{ network.control_ip }}
+        --apiserver-cert-extra-sans={{ network.control_ip }}
+        --pod-network-cidr={{ network.pod_cidr }}
+        --service-cidr={{ network.service_cidr }}
+        --node-name "{{ inventory_hostname }}"
+        --ignore-preflight-errors Swap
+      become_user: root
+
+    - name: Create .kube directory
+      file:
+        path: "{{ lookup('env', 'HOME') }}/.kube"
+        state: directory
+
+    # - name: Copy admin.conf to user's .kube directory
+    #   command: >
+    #     sudo cp -i /etc/kubernetes/admin.conf "{{ lookup('env', 'HOME') }}/.kube/config"
+    #   become_user: "{{ lookup('env', 'USER') }}"
+
+    - name: Copy admin.conf to user's .kube directory
+      command: >
+        cp -i /etc/kubernetes/admin.conf "{{ lookup('env', 'HOME') }}/.kube/config"
+      become_user: root
+
+    - name: Set ownership of .kube/config
+      command: >
+        sudo chown "{{ lookup('env', 'USER') }}":"{{ lookup('env', 'USER') }}" "{{ lookup('env', 'HOME') }}/.kube/config"
+
+    - name: Ensure configs directory exists or clean it up
+      file:
+        path: "{{ config_path }}"
+        state: directory
+        recurse: yes
+      register: config_dir
+
+    - name: Copy admin.conf to configs directory
+      command: "cp -i /etc/kubernetes/admin.conf {{ config_path }}/config"
+      when: config_dir.stat.exists
+      become_user: root
+
+    - name: Create join.sh script
+      command: "touch {{ config_path }}/join.sh && chmod +x {{ config_path }}/join.sh"
+      become_user: root
+
+    - name: Generate kubeadm join command and save to join.sh
+      command: "kubeadm token create --print-join-command > {{ config_path }}/join.sh"
+      become_user: root
+
+    - name: Download Calico manifest
+      get_url:
+        url: "https://raw.githubusercontent.com/projectcalico/calico/{{ software.calico }}/manifests/calico.yaml"
+        dest: "{{ config_path }}/calico.yaml"
+
+    - name: Apply Calico Network Plugin
+      command: "kubectl apply -f {{ config_path }}/calico.yaml"
+      become_user: root
+
+    - name: Set up user-specific kubeconfig
+      blockinfile:
+        path: "/home/vagrant/.kube/config"
+        block: "{{ lookup('file', config_path + '/config') }}"
+        create: yes
+      become_user: vagrant
