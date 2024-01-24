@@ -15,15 +15,15 @@ nodes:
     memory: 4096
   workers:
     count: 1
-    cpu: 2
-    memory: 4096
+    cpu: 1
+    memory: 1024
   acm:
     count: 1
     cpu: 1
-    memory: 2048
+    memory: 1024
 
 software:
   box: bento/ubuntu-22.04
   calico: 3.25.0
-  kubernetes: 1.26.1-00
+  kubernetes: 1.28.2-00
   os: xUbuntu_22.04
