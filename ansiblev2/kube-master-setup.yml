@@ -1,6 +1,6 @@
 ---
 - name: Common setup for all servers
-  hosts: master
+  hosts: all
   become: true
   tasks:
     - name: Create resolved.conf.d directory if not exists
@@ -292,9 +292,6 @@
       command: "touch {{ config_path }}/join.sh && chmod +x {{ config_path }}/join.sh"
       # become_user: root
 
-    # - name: Generate kubeadm join command and save to join.sh
-    #   command: "kubeadm token create --print-join-command > {{ config_path }}/join.sh"
-    #   # become_user: root
 
     - name: Generate kubeadm join command and save to join.sh
       shell:
@@ -307,20 +304,57 @@
         url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
         dest: "{{ config_path }}/calico.yaml"
 
-    - name: Check Kubernetes API server status
-      shell: kubectl cluster-info
-      register: cluster_info
-      until: "'Kubernetes control plane is running' in cluster_info.stdout"
-      retries: 6
-      delay: 10
+    # - name: Check Kubernetes API server status
+    #   shell: kubectl cluster-info
+    #   register: cluster_info
+    #   until: "'Kubernetes control plane is running' in cluster_info.stdout"
+    #   retries: 6
+    #   delay: 10
+    #   become_user: vagrant
+
+    # - name: Check Kubernetes API server status
+    #   command: kubectl cluster-info
+    #   register: cluster_info
+    #   until: "cluster_info.stdout | grep -q 'Kubernetes control plane is running'"
+    #   retries: 6
+    #   delay: 10
+    #   become_user: vagrant
+
+    # - name: Check Kubernetes API server status
+    #   command: kubectl cluster-info
+    #   register: cluster_info
+    #   changed_when: "'Kubernetes control plane is running' in cluster_info.stdout"
+    #   retries: 6
+    #   delay: 10
+
+    # - name: Sleep for 15 seconds
+    #   pause:
+    #     seconds: 15
 
     - name: Apply Calico Network Plugin
       command: "kubectl apply -f {{ config_path }}/calico.yaml"
-      # become_user: root
-
-    - name: Set up user-specific kubeconfig
-      blockinfile:
-        path: "/home/vagrant/.kube/config"
-        block: "{{ lookup('file', config_path + '/config') }}"
-        create: yes
       become_user: vagrant
+
+    - name: Configure Kubernetes for vagrant user
+      command: "sudo -i -u vagrant bash -c 'whoami && mkdir -p /home/vagrant/.kube && cp {{ config_path }}/config /home/vagrant/.kube/ && chown 1000:1000 /home/vagrant/.kube/config'"
+      become_user: vagrant
+
+- name: Installation steps for worker
+  hosts: workers
+  become: true
+  vars:
+    config_path: "/vagrant/configs"
+  tasks:
+  - name: Execute join.sh script
+    command: "/bin/bash {{ config_path }}/join.sh -v"
+
+  - name: Configure Kubernetes for vagrant user
+    become: yes
+    become_user: vagrant
+    command: >
+      sh -c 'whoami &&
+              mkdir -p /home/vagrant/.kube &&
+              sudo cp {{ config_path }}/config /home/vagrant/.kube/ &&
+              sudo chown 1000:1000 /home/vagrant/.kube/config &&
+              NODENAME=$(hostname -s) &&
+              kubectl label node $NODENAME node-role.kubernetes.io/worker=worker'

@@ -1,0 +1,53 @@
+---
+- name: Common setup for all servers
+  hosts: master
+  become: true
+  vars:
+    config_path: "/vagrant/configs"
+  tasks:
+    # - name: Check Kubernetes API server status
+    #   command: kubectl cluster-info
+    #   register: cluster_info
+    #   changed_when: "'Kubernetes control plane is running' in cluster_info.stdout"
+    #   retries: 1
+    #   delay: 5
+
+    - name: Check Kubernetes API server status
+      command: kubectl cluster-info
+      register: response
+      become_user: vagrant
+
+    - name: Check Kubernetes API server status
+      command: kubectl cluster-info
+      register: cluster_info
+      until: cluster_info.stdout | search('Kubernetes control plane is running')
+      retries: 1
+      delay: 5
+      become_user: vagrant
+      ignore_errors: yes
+
+    - name: Configure Kubernetes for vagrant user
+      command: "sudo -i -u vagrant bash -c 'whoami && mkdir -p /home/vagrant/.kube && cp {{ config_path }}/config /home/vagrant/.kube/ && chown 1000:1000 /home/vagrant/.kube/config'"
+
+      
+    - name: "Response Message"
+      debug:
+        msg:
+          - "{{ response.stdout_lines }}"
+
+- name: Common setup for all servers
+  hosts: workers
+  become: true
+  vars:
+    config_path: "/vagrant/configs"
+  tasks:
+    - name: Configure Kubernetes for vagrant user
+      become: yes
+      become_user: vagrant
+      command: >
+        sh -c 'whoami &&
+                mkdir -p /home/vagrant/.kube &&
+                sudo cp -i {{ config_path }}/config /home/vagrant/.kube/ &&
+                sudo chown 1000:1000 /home/vagrant/.kube/config &&
+                NODENAME=$(hostname -s) &&
+                kubectl label node $NODENAME node-role.kubernetes.io/worker=worker'
