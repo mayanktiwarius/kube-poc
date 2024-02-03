@@ -185,4 +185,10 @@ CONTAINER           IMAGE                                                       
 717bcad0d4081       b690f5f0a2d535cee5e08631aa508fef339c43bb91d5b1f7d77a1a05cea021a8   5 hours ago         Running             nginxdeployment     0                   0d5d528f41cdc       nginx-deployment-nginxdeployment-7c96647cbb-656pl
 3ba96a1244e34       08616d26b8e74867402274687491e5978ba4a6ded94e9f5ecc3e364024e5683e   17 hours ago        Running             calico-node         0                   2b5641692fbb0       calico-node-vrrcd
 a9a5caf4b7898       342a759d88156b4f56ba522a1aed0e3d32d72542545346b40877f6583bebe05f   17 hours ago        Running             kube-proxy          0                   cd9fc48065c9a       kube-proxy-nfw6s
+
+All URLS are working after master is down for 4 hours:
+http://10.0.0.13:32000/
+http://10.0.0.12:32000/
+http://10.0.0.13:32001/
+http://10.0.0.12:32001/
 ```
