@@ -1,3 +1,6 @@
+# Pod eviction process testing
+## Tolerations added to pod
+```
 tolerations:
 - key: node.kubernetes.io/network-unavailable
   operator: Exists
@@ -11,22 +14,30 @@ tolerations:
   key: node.kubernetes.io/unreachable
   operator: Exists
   tolerationSeconds: 30
+  ```
 
 
-Simulate 1st one:
+### Simulate one of the scenarios:
+```
 node.kubernetes.io/network-unavailable
+```
 
-Add taint to node:
+##### Add taint to node:
+```
 kubectl taint nodes <node-name> node.kubernetes.io/network-unavailable=true:NoExecute
+```
 
-Check the pod movement:
-Before:
+##### Check the pod movement:
+- Before adding taint to worker-node01:
+```
 vagrant@master-node:~$ kubectl get pods -o wide
 NAME                                                READY   STATUS    RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES
 nginx-deployment-nginxdeployment-7c96647cbb-656pl   1/1     Running   0          5m26s   172.16.158.15   worker-node02   <none>           <none>
 nginx-stateful-nginxstateful-0                      1/1     Running   0          7m6s    172.16.87.207   worker-node01   <none>           <none>
+```
 
-After tainting worker-node01:
+- After adding taint to worker-node01:
+```
 Terminating on old worker node:
 vagrant@master-node:~$ kubectl get pods -o wide
 NAME                                                READY   STATUS        RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES
@@ -39,19 +50,23 @@ vagrant@master-node:~$ kubectl get pods -o wide
 NAME                                                READY   STATUS    RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES
 nginx-deployment-nginxdeployment-7c96647cbb-656pl   1/1     Running   0          7m26s   172.16.158.15   worker-node02   <none>           <none>
 nginx-stateful-nginxstateful-0                      1/1     Running   0          12s     172.16.87.208   worker-node01   <none>           <none>
+```
 
 
-
-Remove taint from the node:
+- Remove taint from the worker node:
+```
 kubectl taint nodes <node-name> node.kubernetes.io/network-unavailable-
-
+```
 
 Likewise it can be done for other tolerations above.
 
 
-Real test:
+## Actual test by bring down master or worker nodes:
 
-Bring down worker node:
+##### Test1: Worker node bring down test
+
+- Bring down worker node:
+```
 vagrant@master-node:~$ kubectl get nodes
 NAME            STATUS     ROLES           AGE   VERSION
 master-node     Ready      control-plane   12h   v1.28.2
@@ -69,8 +84,10 @@ vagrant@master-node:~$ kubectl get pods -o wide
 NAME                                                READY   STATUS        RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES
 nginx-deployment-nginxdeployment-7c96647cbb-656pl   1/1     Running       0          18m     172.16.158.15   worker-node02   <none>           <none>
 nginx-stateful-nginxstateful-0                      1/1     Terminating   0          6m44s   172.16.87.215   worker-node01   <none>           <none>
+```
 
-Worker node is up:
+- Worker node is up:
+```
 vagrant@master-node:~$ kubectl get nodes
 NAME            STATUS   ROLES           AGE   VERSION
 master-node     Ready    control-plane   12h   v1.28.2
@@ -80,12 +97,12 @@ vagrant@master-node:~$ kubectl get pods -o wide
 NAME                                                READY   STATUS    RESTARTS   AGE   IP              NODE            NOMINATED NODE   READINESS GATES
 nginx-deployment-nginxdeployment-7c96647cbb-656pl   1/1     Running   0          20m   172.16.158.15   worker-node02   <none>           <none>
 nginx-stateful-nginxstateful-0                      1/1     Running   0          18s   172.16.87.216   worker-node01   <none>           <none>
+```
 
+##### Test2: Master node bring down test (Expection: All pods should keep running forever)
 
-
-Test2: Bring down the master VM
-Expection: All pods should keep running forever:
-
+- State of the pods before master bring down
+```
 Master:
 root@master-node:/home/vagrant# crictl ps
 CONTAINER           IMAGE                                                              CREATED             STATE               NAME                      ATTEMPT             POD ID              POD
@@ -113,11 +130,14 @@ CONTAINER           IMAGE                                                       
 717bcad0d4081       b690f5f0a2d535cee5e08631aa508fef339c43bb91d5b1f7d77a1a05cea021a8   25 minutes ago      Running             nginxdeployment     0                   0d5d528f41cdc       nginx-deployment-nginxdeployment-7c96647cbb-656pl
 3ba96a1244e34       08616d26b8e74867402274687491e5978ba4a6ded94e9f5ecc3e364024e5683e   13 hours ago        Running             calico-node         0                   2b5641692fbb0       calico-node-vrrcd
 a9a5caf4b7898       342a759d88156b4f56ba522a1aed0e3d32d72542545346b40877f6583bebe05f   13 hours ago        Running             kube-proxy          0                   cd9fc48065c9a       kube-proxy-nfw6s
-
-Stopping master:
+```
+- Stopping master:
+```
 vagrant halt master
+```
 
-Check after master is down:
+- Check after master is down:
+```
 Worker1:
 root@worker-node01:/home/vagrant# crictl ps
 CONTAINER           IMAGE                                                              CREATED             STATE               NAME                ATTEMPT             POD ID              POD
@@ -140,12 +160,11 @@ http://10.0.0.12:32000/
 http://10.0.0.13:32001/
 http://10.0.0.12:32001/
 
+```
 
+- Check 4 hours after master is down:
 
-
-
-
-Check 4 hours after master is down:
+```
 
 All containers are up and also service working
 
@@ -162,12 +181,4 @@ CONTAINER           IMAGE                                                       
 717bcad0d4081       b690f5f0a2d535cee5e08631aa508fef339c43bb91d5b1f7d77a1a05cea021a8   5 hours ago         Running             nginxdeployment     0                   0d5d528f41cdc       nginx-deployment-nginxdeployment-7c96647cbb-656pl
 3ba96a1244e34       08616d26b8e74867402274687491e5978ba4a6ded94e9f5ecc3e364024e5683e   17 hours ago        Running             calico-node         0                   2b5641692fbb0       calico-node-vrrcd
 a9a5caf4b7898       342a759d88156b4f56ba522a1aed0e3d32d72542545346b40877f6583bebe05f   17 hours ago        Running             kube-proxy          0                   cd9fc48065c9a       kube-proxy-nfw6s
-
-
-
-
-
-
-
-
-
+```
