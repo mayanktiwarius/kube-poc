@@ -67,6 +67,8 @@ Likewise it can be done for other tolerations above.
 
 - Bring down worker node:
 ```
+$ vagrant halt node01
+
 vagrant@master-node:~$ kubectl get nodes
 NAME            STATUS     ROLES           AGE   VERSION
 master-node     Ready      control-plane   12h   v1.28.2
@@ -88,6 +90,8 @@ nginx-stateful-nginxstateful-0                      1/1     Terminating   0     
 
 - Worker node is up:
 ```
+$ vagrant up node01
+
 vagrant@master-node:~$ kubectl get nodes
 NAME            STATUS   ROLES           AGE   VERSION
 master-node     Ready    control-plane   12h   v1.28.2
@@ -133,7 +137,7 @@ a9a5caf4b7898       342a759d88156b4f56ba522a1aed0e3d32d72542545346b40877f6583beb
 ```
 - Stopping master:
 ```
-vagrant halt master
+$ vagrant halt master
 ```
 
 - Check after master is down:
