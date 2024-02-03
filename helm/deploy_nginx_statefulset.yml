@@ -1,0 +1,22 @@
+---
+- name: Deploy Nginx StatefulSet with Helm
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Uninstall existing Helm release
+      kubernetes.core.helm:
+        chart_ref: ./nginxstateful
+        release_name: nginx-stateful
+        release_namespace: default
+        state: absent
+      environment:
+        KUBECONFIG: /vagrant/configs/config
+    - name: Install Helm chart
+      kubernetes.core.helm:
+        chart_ref: ./nginxstateful
+        release_namespace: default
+        release_name: nginx-stateful
+        chart_version: 1.0.0 
+      environment:
+        KUBECONFIG: /vagrant/configs/config

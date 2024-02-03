@@ -31,6 +31,22 @@ vagrant ssh node2
 Kube installation:
 connect to acm:
 vagrant ssh acm
-/vagrant/ansiblev2
+cd /vagrant/ansiblev2
 ansible-playbook -i ./inventory/inventory.ini -e @/vagrant/settings.yaml kube-master-setup.yml
+
+Pod installation:
+$cd /vagrant/helm
+$ansible-playbook deploy_nginx_statefulset.yml
+$ansible-playbook deploy_nginx_deployment.yml
+
+
+Troubleshoot:
+1. kubeadm init not working due to stale data of last deployment.
+
+Reset the kubeadm:
+$vagrant ssh master
+$sudo kubeadm reset
+
+Sample init command to debug:
+$sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --apiserver-cert-extra-sans=10.0.0.10 --pod-network-cidr=172.16.1.0/16 --service-cidr=172.17.1.0/18 --node-name master-node --ignore-preflight-errors Swap
 

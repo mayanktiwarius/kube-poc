@@ -251,6 +251,11 @@
       command: kubeadm config images pull
       become_user: root
 
+    - name: Run kubeadm reset with ignore-preflight-errors and automatic "yes"
+      command: sh -c 'yes | sudo kubeadm reset --ignore-preflight-errors=all'
+      ignore_errors: yes
+      become_user: root
+
     - name: Run kubeadm init
       command: >
         kubeadm init
@@ -345,6 +350,10 @@
   vars:
     config_path: "/vagrant/configs"
   tasks:
+  - name: Run kubeadm reset with ignore-preflight-errors and automatic "yes"
+    command: sh -c 'yes | sudo kubeadm reset --ignore-preflight-errors=all'
+    ignore_errors: yes
+
   - name: Execute join.sh script
     command: "/bin/bash {{ config_path }}/join.sh -v"
 

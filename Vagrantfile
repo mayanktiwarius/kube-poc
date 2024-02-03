@@ -105,6 +105,7 @@ Vagrant.configure("2") do |config|
       # Install Ansible
       sudo apt-get install -y ansible
       ansible-galaxy collection install community.kubernetes
+      ansible-galaxy collection install kubernetes.core
 
       # Install python3 and pip3 (required by Ansible)
       sudo apt-get install -y python3 python3-pip
@@ -112,6 +113,11 @@ Vagrant.configure("2") do |config|
       # Install additional Ansible dependencies (optional)
       pip3 install wheel
       pip3 install ansible-lint
+
+      # Install helm
+      wget https://get.helm.sh/helm-v3.8.2-linux-amd64.tar.gz
+      tar -zxvf helm-v3.8.2-linux-amd64.tar.gz
+      sudo mv linux-amd64/helm /usr/local/bin/helm
     SHELL
   end
 
@@ -187,6 +193,10 @@ Vagrant.configure("2") do |config|
         else
             echo "Timeout waiting for source file."
         fi
+        # Install helm
+        wget https://get.helm.sh/helm-v3.8.2-linux-amd64.tar.gz
+        tar -zxvf helm-v3.8.2-linux-amd64.tar.gz
+        sudo mv linux-amd64/helm /usr/local/bin/helm
       SCRIPT
     end
   end
