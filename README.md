@@ -9,16 +9,16 @@ $vagrant up
 
 
 # Kube installation:
-- connect to acm:
+- connect to ACM:
 ```
 $vagrant ssh acm
 ```
-- Deploy kube cluster:
+- Deploy kube cluster from ACM
 ```
 cd /vagrant/ansiblev2
 ansible-playbook -i ./inventory/inventory.ini -e @/vagrant/settings.yaml kube-master-setup.yml
 ```
-- Pod installation using helm:
+- Pod installation using helm from ACM:
 ```
 $cd /vagrant/helm
 $ansible-playbook deploy_nginx_statefulset.yml
