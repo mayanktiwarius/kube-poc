@@ -192,3 +192,48 @@ http://10.0.0.12:32000/
 http://10.0.0.13:32001/
 http://10.0.0.12:32001/
 ```
+
+- Bring up the master and ensure that cluster is restored as before
+```
+$ vagrant up master
+$ vagrant ssh master
+
+vagrant@master-node:~$ kubectl get pods -o wide --all-namespaces
+NAMESPACE     NAME                                                READY   STATUS    RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES
+default       nginx-deployment-nginxdeployment-7c96647cbb-656pl   1/1     Running   0          5h20m   172.16.158.15   worker-node02   <none>           <none>
+default       nginx-stateful-nginxstateful-0                      1/1     Running   0          4h59m   172.16.87.216   worker-node01   <none>           <none>
+kube-system   calico-kube-controllers-658d97c59c-k8ngl            1/1     Running   1          17h     172.16.77.133   master-node     <none>           <none>
+kube-system   calico-node-dvwqt                                   1/1     Running   1          17h     10.0.0.10       master-node     <none>           <none>
+kube-system   calico-node-l6v9m                                   1/1     Running   1          17h     10.0.0.12       worker-node01   <none>           <none>
+kube-system   calico-node-vrrcd                                   1/1     Running   0          17h     10.0.0.13       worker-node02   <none>           <none>
+kube-system   coredns-5dd5756b68-fhc4l                            1/1     Running   1          17h     172.16.77.132   master-node     <none>           <none>
+kube-system   coredns-5dd5756b68-pbqtv                            1/1     Running   1          17h     172.16.77.134   master-node     <none>           <none>
+kube-system   etcd-master-node                                    1/1     Running   5          17h     10.0.0.10       master-node     <none>           <none>
+kube-system   kube-apiserver-master-node                          1/1     Running   5          17h     10.0.0.10       master-node     <none>           <none>
+kube-system   kube-controller-manager-master-node                 1/1     Running   7          17h     10.0.0.10       master-node     <none>           <none>
+kube-system   kube-proxy-lfqpg                                    1/1     Running   1          17h     10.0.0.10       master-node     <none>           <none>
+kube-system   kube-proxy-nfw6s                                    1/1     Running   0          17h     10.0.0.13       worker-node02   <none>           <none>
+kube-system   kube-proxy-wjcdf                                    1/1     Running   1          17h     10.0.0.12       worker-node01   <none>           <none>
+kube-system   kube-scheduler-master-node                          1/1     Running   7          17h     10.0.0.10       master-node     <none>           <none>
+
+vagrant@master-node:~$ kubectl get svc
+NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes                         ClusterIP   172.17.0.1      <none>        443/TCP        17h
+nginx-deployment-nginxdeployment   NodePort    172.17.31.246   <none>        80:32000/TCP   5h18m
+nginx-stateful-nginxstateful       NodePort    172.17.30.187   <none>        80:32001/TCP   5h19m
+vagrant@master-node:~$ kubectl get nodes
+NAME            STATUS   ROLES           AGE   VERSION
+master-node     Ready    control-plane   17h   v1.28.2
+worker-node01   Ready    worker          17h   v1.28.2
+worker-node02   Ready    worker          17h   v1.28.2
+
+vagrant@master-node:~$ kubectl get sts --all-namespaces
+NAMESPACE   NAME                           READY   AGE
+default     nginx-stateful-nginxstateful   1/1     5h21m
+
+vagrant@master-node:~$ kubectl get deployments --all-namespaces
+NAMESPACE     NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+default       nginx-deployment-nginxdeployment   1/1     1            1           5h19m
+kube-system   calico-kube-controllers            1/1     1            1           17h
+kube-system   coredns                            2/2     2            2           17h
+```
