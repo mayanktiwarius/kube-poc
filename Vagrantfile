@@ -95,6 +95,7 @@ Vagrant.configure("2") do |config|
         # Create ansible working folder
         mkdir /home/vagrant/ansible
         cp -r /vagrant/ansible /home/vagrant/ansible
+        echo "StrictHostKeyChecking no"  >> /home/vagrant/.ssh/config
       SCRIPT
     end
     acm.vm.provision "shell", inline: <<-SHELL

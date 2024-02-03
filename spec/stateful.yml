@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-statefulset
+spec:
+  serviceName: "nginx-headless"
+  selector:
+    matchLabels:
+      app: nginx-stateful
+  replicas: 2 
+  template:
+    metadata:
+      labels:
+        app: nginx-stateful
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "256Mi"
+          requests:
+            cpu: "0.25"
+            memory: "128Mi"
+        ports:
+        - containerPort: 80
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nginx-headless
+# spec:
+#   selector:
+#     app: nginx
+#   clusterIP: None
+#   ports:
+#     - port: 80
+#       targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-stateful
+spec:
+  selector:
+    app: nginx-stateful
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 32001
