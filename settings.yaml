@@ -25,5 +25,6 @@ nodes:
 software:
   box: bento/ubuntu-22.04
   calico: 3.25.0
+  cilium: v0.15.21
   kubernetes: 1.28.2-00
   os: xUbuntu_22.04
