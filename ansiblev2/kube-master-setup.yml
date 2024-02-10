@@ -304,10 +304,10 @@
       args:
         executable: /bin/bash
 
-    - name: Download Calico manifest
-      get_url:
-        url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
-        dest: "{{ config_path }}/calico.yaml"
+    # - name: Download Calico manifest
+    #   get_url:
+    #     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
+    #     dest: "{{ config_path }}/calico.yaml"
 
     # - name: Check Kubernetes API server status
     #   shell: kubectl cluster-info
@@ -336,9 +336,9 @@
     #   pause:
     #     seconds: 15
 
-    - name: Apply Calico Network Plugin
-      command: "kubectl apply -f {{ config_path }}/calico.yaml"
-      become_user: vagrant
+    # - name: Apply Calico Network Plugin
+    #   command: "kubectl apply -f {{ config_path }}/calico.yaml"
+    #   become_user: vagrant
 
     - name: Configure Kubernetes for vagrant user
       command: "sudo -i -u vagrant bash -c 'whoami && mkdir -p /home/vagrant/.kube && cp {{ config_path }}/config /home/vagrant/.kube/ && chown 1000:1000 /home/vagrant/.kube/config'"
