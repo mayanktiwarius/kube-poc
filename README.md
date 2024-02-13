@@ -62,3 +62,17 @@ $sudo kubeadm reset
 Sample init command to debug:
 $sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --apiserver-cert-extra-sans=10.0.0.10 --pod-network-cidr=172.16.1.0/16 --service-cidr=172.17.1.0/18 --node-name master-node --ignore-preflight-errors Swap
 ```
+
+# Command to bring up cilium
+```
+helm repo add cilium https://helm.cilium.io/
+helm install cilium cilium/cilium --version 1.15.0 \
+  --namespace kube-system \
+  --set kubeProxyReplacement=partial \
+  --set hostServices.enabled=true \
+  --set externalIPs.enabled=true \
+  --set nodePort.enabled=true \
+  --set hostPort.enabled=true \
+  --set bpf.masquerade=false \
+  --set image.pullPolicy=IfNotPresent
+```

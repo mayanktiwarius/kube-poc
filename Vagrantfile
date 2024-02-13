@@ -104,7 +104,7 @@ Vagrant.configure("2") do |config|
 
       # Install Ansible
       sudo apt-get install -y ansible
-      ansible-galaxy collection install community.kubernetes
+      #ansible-galaxy collection install community.kubernetes
       ansible-galaxy collection install kubernetes.core
 
       # Install python3 and pip3 (required by Ansible)
