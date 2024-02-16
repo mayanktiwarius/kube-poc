@@ -340,6 +340,15 @@
     #   command: "kubectl apply -f {{ config_path }}/calico.yaml"
     #   become_user: vagrant
 
+    - name: Add Cilium Helm repository
+      command: "helm repo add cilium https://helm.cilium.io/"
+      
+    - name: Install Cilium with Helm
+      command: "helm install cilium cilium/cilium --version 1.15.0 --namespace kube-system"
+
+    - name: Upgrade Cilium Helm release with identityTracking configuration
+      command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"
+
     - name: Configure Kubernetes for vagrant user
       command: "sudo -i -u vagrant bash -c 'whoami && mkdir -p /home/vagrant/.kube && cp {{ config_path }}/config /home/vagrant/.kube/ && chown 1000:1000 /home/vagrant/.kube/config'"
       become_user: vagrant

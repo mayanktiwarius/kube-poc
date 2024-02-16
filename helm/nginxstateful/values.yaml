@@ -89,3 +89,5 @@ tolerations:
   tolerationSeconds: 30
 
 affinity: {}
+labels:
+  app: backend
