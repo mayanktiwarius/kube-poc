@@ -57,7 +57,7 @@ OR
 Step by step execution to observe the changes done by each step:
 ```
 1. Connect to master
-$vagrant ssh master
+$ vagrant ssh master
 2. Bring up the setup
 $ cd /vagrant/cilium
 $ ./bring_up_setup.sh
