@@ -18,12 +18,57 @@ $vagrant ssh acm
 cd /vagrant/ansiblev2
 ansible-playbook -i ./inventory/inventory.ini -e @/vagrant/settings.yaml kube-master-setup.yml
 ```
-- Pod installation using helm from ACM:
+
+
+# Pod installation/uinstallation using helm from ACM: (optional not needed for)
 ```
+Installation steps:
+$vagrant ssh acm
 $cd /vagrant/helm
-$ansible-playbook deploy_nginx_statefulset.yml
-$ansible-playbook deploy_nginx_deployment.yml
+$./install_pods.sh
+$vagrant ssh master
+$ kubectl get pods
+Pods should be listed
+
+Uninstallation steps:
+$vagrant ssh acm
+$cd /vagrant/helm
+$./uninstall_pods.sh
+$vagrant ssh master
+$ kubectl get pods
+Pods should not be listed
 ```
+
+# Cilium use case1: L3-L7 rule
+https://docs.cilium.io/en/stable/gettingstarted/demo/
+
+```
+1. Connect to master
+$vagrant ssh master
+2. Bring up the setup
+$ cd /vagrant/cilium
+$ ./bring_up_setup.sh
+3. Demo that L3/L4 connection works for both pods before policy is applied
+$ ./test_connection.sh
+4. Apply l3/l4 policy
+$ ./apply_l4_policy.sh
+5. Demo that L3/L4 connection work for one pod and not for another pod
+$ ./test_connection.sh
+6. Apply l7 policy
+$ ./apply_l7_policy.sh
+7. Demo that L7 connection work for one pod and not for another pod
+$ ./test_connection.sh
+7. Clean up the setup
+$ ./cleanup_setup.sh
+
+OR
+Run a script to run all play in one shot:
+1. Connect to master
+$vagrant ssh master
+2. Run the demo
+$ ./run_demo.sh
+```
+
 
 
 
@@ -75,9 +120,23 @@ Sample init command to debug:
 $sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --apiserver-cert-extra-sans=10.0.0.10 --pod-network-cidr=172.16.1.0/16 --service-cidr=172.17.1.0/18 --node-name master-node --ignore-preflight-errors Swap
 ```
 
+# Cilium use case1: L3-L7 rule
+https://docs.cilium.io/en/stable/gettingstarted/demo/
+
+```
+1. Connect to master
+2. Bring up the setup
+3. Demo that L3-L7 connection works for both pods before policy is applied
+4. Apply policy
+5. Demo that L3-L7 connection work for one pod and not for another pod
+6. ctrl c
+7. Clean up the setup
+```
 
 
-# Cilium use case: https://cilium.io/blog/2020/07/27/2020-07-27-multitenancy-network-security/
+
+# Cilium use case2: (in progress) 
+https://cilium.io/blog/2020/07/27/2020-07-27-multitenancy-network-security/
 ```
 IP addresses aren't suitable for identities in Kubernetes because Pod Replicas can have N number of IP addresses for a single workload. Additionally, correlating a Pod to an IP address is difficult in a highly dynamic environment like Kubernetes, as Pods can be quickly destroyed and re-scheduled, each time with a different IP address. So if you have a Pod with labels frontend, and you delete the Pod and quickly spin up a new Pod, Kubernetes is free to reassign the frontend IP to a new Pod that has the label agent_of_chaos.
 

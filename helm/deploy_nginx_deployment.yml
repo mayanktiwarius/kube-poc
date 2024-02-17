@@ -10,6 +10,8 @@
         release_name: nginx-deployment
         release_namespace: default
         state: absent
+      tags:
+        - absent_task
       environment:
         KUBECONFIG: /vagrant/configs/config
     - name: Install Helm chart
