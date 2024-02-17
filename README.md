@@ -51,6 +51,15 @@ $vagrant ssh master
 $ ./run_demo.sh
 ```
 
+Playbook in one shot:
+```
+1. Connect to master
+$vagrant ssh master
+2. Run the demo
+$ ./run_demo.sh
+```
+
+
 OR
 
 Step by step execution to observe the changes done by each step:
