@@ -89,5 +89,19 @@ tolerations:
   tolerationSeconds: 30
 
 affinity: {}
+
 labels:
+  name: backend
   app: backend
+
+
+selectorLabels:
+  name: backend
+  app: backend
+
+additionalContainers:
+  - name: debug-container
+    image: nicolaka/netshoot:latest
+    securityContext:
+      privileged: true  # Allow all capabilities
+    command: ["/bin/sleep", "infinity"]

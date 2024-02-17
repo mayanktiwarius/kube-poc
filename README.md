@@ -58,6 +58,9 @@ $helm create mychart
 
 List helm installed:
 $helm list
+
+Check the spec created from template:
+$helm template test-release ./helm-project/
 ```
 
 # Troubleshoot:
@@ -92,6 +95,11 @@ kubectl apply -f cilium_policy.yaml
 3. After applying policy frontend can reach backend but agent-of-chaos cannot reach backend
 
 ```
+Reference: 
+https://github.com/cilium/cilium/tree/main/examples/policies/kubernetes
+Subrefernce: 
+https://github.com/cilium/cilium/blob/main/examples/policies/kubernetes/namespace/namespace-policy.yaml
+
 
 
 # Notes

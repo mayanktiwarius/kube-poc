@@ -91,4 +91,17 @@ tolerations:
 affinity: {}
 
 labels:
+  name: frontend
   app: frontend
+
+
+selectorLabels:
+  name: frontend
+  app: frontend
+
+additionalContainers:
+  - name: debug-container
+    image: nicolaka/netshoot:latest
+    securityContext:
+      privileged: true  # Allow all capabilities
+    command: ["/bin/sleep", "infinity"]

@@ -342,12 +342,15 @@
 
     - name: Add Cilium Helm repository
       command: "helm repo add cilium https://helm.cilium.io/"
+      become_user: vagrant
       
     - name: Install Cilium with Helm
       command: "helm install cilium cilium/cilium --version 1.15.0 --namespace kube-system"
+      become_user: vagrant
 
-    - name: Upgrade Cilium Helm release with identityTracking configuration
-      command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"
+    # - name: Upgrade Cilium Helm release with identityTracking configuration
+    #   command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"
+    #   become_user: vagrant
 
     - name: Configure Kubernetes for vagrant user
       command: "sudo -i -u vagrant bash -c 'whoami && mkdir -p /home/vagrant/.kube && cp {{ config_path }}/config /home/vagrant/.kube/ && chown 1000:1000 /home/vagrant/.kube/config'"

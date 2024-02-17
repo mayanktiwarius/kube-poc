@@ -1,0 +1,21 @@
+---
+- name: Deploy Nginx deployment with Helm
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Uninstall existing Helm release
+      kubernetes.core.helm:
+        chart_ref: ./nginxchaosdeployment
+        release_name: nginx-chaos-deployment
+        release_namespace: default
+        state: absent
+      environment:
+        KUBECONFIG: /vagrant/configs/config
+    - name: Install Helm chart
+      kubernetes.core.helm:
+        chart_ref: ./nginxchaosdeployment
+        release_namespace: default
+        release_name: nginx-chaos-deployment
+      environment:
+        KUBECONFIG: /vagrant/configs/config
