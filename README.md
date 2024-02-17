@@ -43,10 +43,12 @@ Pods should not be listed
 https://docs.cilium.io/en/stable/gettingstarted/demo/
 
 Playbook execution to see all in one shot
+```
 1. Connect to master
 $vagrant ssh master
 2. Run the demo
 $ ./run_demo.sh
+```
 
 OR
 
@@ -136,7 +138,7 @@ To update the security policy in a traditional IP-based model, Nodes have to lea
 Cilium identifies a network entity with an identity instead of an IP address. Identities are derived from Kubernetes labels and other metadata which allows security logic such as, "Only allow frontend Pods access to backend Pods". This allows for identity-aware security decisions such as Network Policy filtering.
 ```
 
-# Cilium test - WIP
+# Cilium use case2 approach: (WIP) 
 ```
 1. Without policy backend can be reached from both frontend and agent-of-chaos
 2. Apply the policy from master:
