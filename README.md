@@ -42,6 +42,15 @@ Pods should not be listed
 # Cilium use case1: L3-L7 rule
 https://docs.cilium.io/en/stable/gettingstarted/demo/
 
+Playbook execution to see all in one shot
+1. Connect to master
+$vagrant ssh master
+2. Run the demo
+$ ./run_demo.sh
+
+OR
+
+Step by step execution to observe the changes done by each step:
 ```
 1. Connect to master
 $vagrant ssh master
@@ -61,12 +70,6 @@ $ ./test_connection.sh
 7. Clean up the setup
 $ ./cleanup_setup.sh
 
-OR
-Run a script to run all play in one shot:
-1. Connect to master
-$vagrant ssh master
-2. Run the demo
-$ ./run_demo.sh
 ```
 
 
@@ -120,22 +123,10 @@ Sample init command to debug:
 $sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --apiserver-cert-extra-sans=10.0.0.10 --pod-network-cidr=172.16.1.0/16 --service-cidr=172.17.1.0/18 --node-name master-node --ignore-preflight-errors Swap
 ```
 
-# Cilium use case1: L3-L7 rule
-https://docs.cilium.io/en/stable/gettingstarted/demo/
-
-```
-1. Connect to master
-2. Bring up the setup
-3. Demo that L3-L7 connection works for both pods before policy is applied
-4. Apply policy
-5. Demo that L3-L7 connection work for one pod and not for another pod
-6. ctrl c
-7. Clean up the setup
-```
 
 
 
-# Cilium use case2: (in progress) 
+# Cilium use case2: (WIP) 
 https://cilium.io/blog/2020/07/27/2020-07-27-multitenancy-network-security/
 ```
 IP addresses aren't suitable for identities in Kubernetes because Pod Replicas can have N number of IP addresses for a single workload. Additionally, correlating a Pod to an IP address is difficult in a highly dynamic environment like Kubernetes, as Pods can be quickly destroyed and re-scheduled, each time with a different IP address. So if you have a Pod with labels frontend, and you delete the Pod and quickly spin up a new Pod, Kubernetes is free to reassign the frontend IP to a new Pod that has the label agent_of_chaos.
@@ -145,7 +136,7 @@ To update the security policy in a traditional IP-based model, Nodes have to lea
 Cilium identifies a network entity with an identity instead of an IP address. Identities are derived from Kubernetes labels and other metadata which allows security logic such as, "Only allow frontend Pods access to backend Pods". This allows for identity-aware security decisions such as Network Policy filtering.
 ```
 
-# Cilium test
+# Cilium test - WIP
 ```
 1. Without policy backend can be reached from both frontend and agent-of-chaos
 2. Apply the policy from master:
