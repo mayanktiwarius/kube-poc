@@ -42,7 +42,8 @@ Pods should not be listed
 # Cilium use case1: L3-L7 rule
 https://docs.cilium.io/en/stable/gettingstarted/demo/
 
-Playbook execution to see all in one shot
+Playbook execution to see all in one shot:
+
 ```
 1. Connect to master
 $vagrant ssh master
