@@ -77,7 +77,7 @@ $ ./test_connection.sh
 $ ./apply_l7_policy.sh
 7. Demo that L7 connection work for one pod and not for another pod
 $ ./test_connection.sh
-$ ./test_connection_l7sh
+$ ./test_connection_l7.sh
 7. Clean up the setup
 $ ./cleanup_setup.sh
 
