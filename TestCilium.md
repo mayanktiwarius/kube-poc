@@ -1,9 +1,51 @@
 # Cilium use case1: L3-L7 rule: Demo
 ```
-$ vagrant ssh master
-vagrant@master-node:~$ cd /vagrant/cilium/
+bash-3.2$ vagrant ssh master
+Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-83-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Feb 18 05:21:14 PM UTC 2024
+
+  System load:     0.24755859375      IPv4 address for cilium_host: 10.0.0.211
+  Usage of /:      19.9% of 30.34GB   IPv4 address for cni0:        10.85.0.1
+  Memory usage:    47%                IPv6 address for cni0:        1100:200::1
+  Swap usage:      0%                 IPv4 address for eth0:        10.0.2.15
+  Processes:       183                IPv4 address for eth1:        10.1.0.10
+  Users logged in: 0
+
+
+This system is built by the Bento project by Chef Software
+More information can be found at https://github.com/chef/bento
+Last login: Sun Feb 18 17:19:13 2024 from 10.0.2.2
+vagrant@master-node:~$ cd /vagrant/cilium
 vagrant@master-node:/vagrant/cilium$ ./run_demo.sh
 + ./bring_up_setup.sh
++ echo 'List the pods and service before bringing up'
+List the pods and service before bringing up
++ kubectl get pods,svc --all-namespaces -o wide
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE     IP           NODE            NOMINATED NODE   READINESS GATES
+kube-system   pod/cilium-87s7l                          1/1     Running   0          5m40s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/cilium-94fp4                          1/1     Running   0          5m35s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/cilium-bf287                          1/1     Running   0          5m35s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-dwgq2        1/1     Running   0          5m40s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-f2tx7        1/1     Running   0          5m41s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-g9rvn              1/1     Running   0          5m1s    10.0.0.254   master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-p5c4p              1/1     Running   0          4m46s   10.0.0.35    master-node     <none>           <none>
+kube-system   pod/etcd-master-node                      1/1     Running   0          5m54s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-apiserver-master-node            1/1     Running   0          5m54s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-controller-manager-master-node   1/1     Running   0          5m54s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-proxy-hd9cq                      1/1     Running   0          5m35s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/kube-proxy-mm7rs                      1/1     Running   0          5m35s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/kube-proxy-xf7cc                      1/1     Running   0          5m40s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-scheduler-master-node            1/1     Running   0          5m55s   10.1.0.10    master-node     <none>           <none>
+
+NAMESPACE     NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                  AGE     SELECTOR
+default       service/kubernetes    ClusterIP   172.17.0.1     <none>        443/TCP                  5m56s   <none>
+kube-system   service/hubble-peer   ClusterIP   172.17.51.27   <none>        443/TCP                  5m48s   k8s-app=cilium
+kube-system   service/kube-dns      ClusterIP   172.17.0.10    <none>        53/UDP,53/TCP,9153/TCP   5m54s   k8s-app=kube-dns
 + echo 'Installation of all pods'
 Installation of all pods
 + kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.15.1/examples/minikube/http-sw-app.yaml
@@ -11,78 +53,116 @@ service/deathstar created
 deployment.apps/deathstar created
 pod/tiefighter created
 pod/xwing created
-+ echo 'List the pods and service'
-List the pods and service
-+ kubectl get pods,svc
-NAME                            READY   STATUS              RESTARTS   AGE
-pod/deathstar-f449b9b55-8jpdz   0/1     ContainerCreating   0          1s
-pod/deathstar-f449b9b55-96r97   0/1     ContainerCreating   0          1s
-pod/tiefighter                  0/1     ContainerCreating   0          1s
-pod/xwing                       0/1     ContainerCreating   0          1s
++ echo 'Waiting for 1 min for pods to come up'
+Waiting for 1 min for pods to come up
++ sleep 60
++ echo 'List the pods and service after bringing up'
+List the pods and service after bringing up
++ kubectl get pods,svc --all-namespaces -o wide
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE     IP           NODE            NOMINATED NODE   READINESS GATES
+default       pod/deathstar-f449b9b55-h87ht             1/1     Running   0          61s     10.0.2.254   worker-node02   <none>           <none>
+default       pod/deathstar-f449b9b55-x6dtd             1/1     Running   0          61s     10.0.1.68    worker-node01   <none>           <none>
+default       pod/tiefighter                            1/1     Running   0          61s     10.0.1.168   worker-node01   <none>           <none>
+default       pod/xwing                                 1/1     Running   0          61s     10.0.1.89    worker-node01   <none>           <none>
+kube-system   pod/cilium-87s7l                          1/1     Running   0          6m41s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/cilium-94fp4                          1/1     Running   0          6m36s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/cilium-bf287                          1/1     Running   0          6m36s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-dwgq2        1/1     Running   0          6m41s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-f2tx7        1/1     Running   0          6m42s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-g9rvn              1/1     Running   0          6m2s    10.0.0.254   master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-p5c4p              1/1     Running   0          5m47s   10.0.0.35    master-node     <none>           <none>
+kube-system   pod/etcd-master-node                      1/1     Running   0          6m55s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-apiserver-master-node            1/1     Running   0          6m55s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-controller-manager-master-node   1/1     Running   0          6m55s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-proxy-hd9cq                      1/1     Running   0          6m36s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/kube-proxy-mm7rs                      1/1     Running   0          6m36s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/kube-proxy-xf7cc                      1/1     Running   0          6m41s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-scheduler-master-node            1/1     Running   0          6m56s   10.1.0.10    master-node     <none>           <none>
 
-NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-service/deathstar    ClusterIP   172.17.18.207   <none>        80/TCP    1s
-service/kubernetes   ClusterIP   172.17.0.1      <none>        443/TCP   84m
+NAMESPACE     NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE     SELECTOR
+default       service/deathstar     ClusterIP   172.17.16.216   <none>        80/TCP                   61s     class=deathstar,org=empire
+default       service/kubernetes    ClusterIP   172.17.0.1      <none>        443/TCP                  6m57s   <none>
+kube-system   service/hubble-peer   ClusterIP   172.17.51.27    <none>        443/TCP                  6m49s   k8s-app=cilium
+kube-system   service/kube-dns      ClusterIP   172.17.0.10     <none>        53/UDP,53/TCP,9153/TCP   6m55s   k8s-app=kube-dns
 + ./test_connection.sh
 Requesting landing from xwing to deathstar
-error: unable to upgrade connection: container not found ("spaceship")
-Request for landing of xwing to deathstar failed
+Ship landed
 Requesting landing from tiefighter to deathstar
-error: unable to upgrade connection: container not found ("spaceship")
-Request for landing of tiefighter to deathstar failed
+Ship landed
 + ./apply_l4_policy.sh
 + echo 'List existing policy'
 List existing policy
 ++ kubectl -n kube-system get pods -l k8s-app=cilium -o 'jsonpath={.items[*].metadata.name}'
-+ pod_names='cilium-7qkmf cilium-8z2h4 cilium-9hlbb'
++ pod_names='cilium-87s7l cilium-94fp4 cilium-bf287'
 + for pod in $pod_names
-+ echo 'Policy for pod: cilium-7qkmf'
-Policy for pod: cilium-7qkmf
-+ kubectl -n kube-system exec cilium-7qkmf -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                 IPv6   IPv4        STATUS
-           ENFORCEMENT        ENFORCEMENT
-905        Disabled           Disabled          4          reserved:health                                    10.0.2.58   ready
-2045       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                      ready
-                                                           reserved:host
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-8z2h4'
-Policy for pod: cilium-8z2h4
-+ kubectl -n kube-system exec cilium-8z2h4 -- cilium-dbg endpoint list
++ echo 'Policy for pod: cilium-87s7l'
+Policy for pod: cilium-87s7l
++ kubectl -n kube-system exec cilium-87s7l -- cilium-dbg endpoint list
 Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
 ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
            ENFORCEMENT        ENFORCEMENT
-181        Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.216   ready
+129        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.35    ready
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=coredns
                                                            k8s:io.kubernetes.pod.namespace=kube-system
                                                            k8s:k8s-app=kube-dns
-669        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
+194        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.254   ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+787        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
                                                            k8s:node.kubernetes.io/exclude-from-external-load-balancers
                                                            reserved:host
-1657       Disabled           Disabled          4          reserved:health                                                                     10.0.0.157   ready
-1808       Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.23    ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
+2458       Disabled           Disabled          4          reserved:health                                                                     10.0.0.6     ready
 + for pod in $pod_names
-+ echo 'Policy for pod: cilium-9hlbb'
-Policy for pod: cilium-9hlbb
-+ kubectl -n kube-system exec cilium-9hlbb -- cilium-dbg endpoint list
++ echo 'Policy for pod: cilium-94fp4'
+Policy for pod: cilium-94fp4
++ kubectl -n kube-system exec cilium-94fp4 -- cilium-dbg endpoint list
 Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
 ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
            ENFORCEMENT        ENFORCEMENT
-242        Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+368        Disabled           Disabled          65013      k8s:app.kubernetes.io/name=tiefighter                                           10.0.1.168   ready
+                                                           k8s:class=tiefighter
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=empire
+885        Disabled           Disabled          18165      k8s:app.kubernetes.io/name=xwing                                                10.0.1.89    ready
+                                                           k8s:class=xwing
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=alliance
+1658       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
                                                            reserved:host
-898        Disabled           Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.97    ready
+3127       Disabled           Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.68    ready
                                                            k8s:class=deathstar
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-1377       Disabled           Disabled          4          reserved:health                                                                 10.0.1.195   ready
+3311       Disabled           Disabled          4          reserved:health                                                                 10.0.1.94    ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-bf287'
+Policy for pod: cilium-bf287
++ kubectl -n kube-system exec cilium-bf287 -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+431        Disabled           Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.254   ready
+                                                           k8s:class=deathstar
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=empire
+1303       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+                                                           reserved:host
+3275       Disabled           Disabled          4          reserved:health                                                                 10.0.2.221   ready
 + echo 'Apply policy'
 Apply policy
 + curl https://raw.githubusercontent.com/cilium/cilium/1.15.1/examples/minikube/sw_l3_l4_policy.yaml
@@ -109,76 +189,76 @@ ciliumnetworkpolicy.cilium.io/rule1 created
 + echo 'Inspect updated policy'
 Inspect updated policy
 ++ kubectl -n kube-system get pods -l k8s-app=cilium -o 'jsonpath={.items[*].metadata.name}'
-+ pod_names='cilium-7qkmf cilium-8z2h4 cilium-9hlbb'
++ pod_names='cilium-87s7l cilium-94fp4 cilium-bf287'
 + for pod in $pod_names
-+ echo 'Policy for pod: cilium-7qkmf'
-Policy for pod: cilium-7qkmf
-+ kubectl -n kube-system exec cilium-7qkmf -- cilium-dbg endpoint list
++ echo 'Policy for pod: cilium-87s7l'
+Policy for pod: cilium-87s7l
++ kubectl -n kube-system exec cilium-87s7l -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+129        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.35    ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+194        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.254   ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+787        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
+                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
+                                                           reserved:host
+2458       Disabled           Disabled          4          reserved:health                                                                     10.0.0.6     ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-94fp4'
+Policy for pod: cilium-94fp4
++ kubectl -n kube-system exec cilium-94fp4 -- cilium-dbg endpoint list
 Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
 ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
            ENFORCEMENT        ENFORCEMENT
-905        Disabled           Disabled          4          reserved:health                                                                 10.0.2.58    ready
-1002       Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.239   ready
-                                                           k8s:class=deathstar
-                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
-                                                           k8s:io.kubernetes.pod.namespace=default
-                                                           k8s:org=empire
-1764       Disabled           Disabled          13669      k8s:app.kubernetes.io/name=tiefighter                                           10.0.2.202   ready
+368        Disabled           Disabled          65013      k8s:app.kubernetes.io/name=tiefighter                                           10.0.1.168   ready
                                                            k8s:class=tiefighter
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-2000       Disabled           Disabled          34944      k8s:app.kubernetes.io/name=xwing                                                10.0.2.244   ready
+885        Disabled           Disabled          18165      k8s:app.kubernetes.io/name=xwing                                                10.0.1.89    ready
                                                            k8s:class=xwing
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=alliance
-2045       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+1658       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
                                                            reserved:host
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-8z2h4'
-Policy for pod: cilium-8z2h4
-+ kubectl -n kube-system exec cilium-8z2h4 -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-181        Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.216   ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-669        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
-                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
-                                                           reserved:host
-1657       Disabled           Disabled          4          reserved:health                                                                     10.0.0.157   ready
-1808       Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.23    ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-9hlbb'
-Policy for pod: cilium-9hlbb
-+ kubectl -n kube-system exec cilium-9hlbb -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-242        Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
-                                                           reserved:host
-898        Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.97    ready
+3127       Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.68    ready
                                                            k8s:class=deathstar
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-1377       Disabled           Disabled          4          reserved:health                                                                 10.0.1.195   ready
+3311       Disabled           Disabled          4          reserved:health                                                                 10.0.1.94    ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-bf287'
+Policy for pod: cilium-bf287
++ kubectl -n kube-system exec cilium-bf287 -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+431        Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.254   ready
+                                                           k8s:class=deathstar
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=empire
+1303       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+                                                           reserved:host
+3275       Disabled           Disabled          4          reserved:health                                                                 10.0.2.221   ready
 + kubectl describe cnp rule1
 Name:         rule1
 Namespace:    default
@@ -187,10 +267,10 @@ Annotations:  <none>
 API Version:  cilium.io/v2
 Kind:         CiliumNetworkPolicy
 Metadata:
-  Creation Timestamp:  2024-02-17T17:58:20Z
+  Creation Timestamp:  2024-02-18T17:22:35Z
   Generation:          1
-  Resource Version:    11547
-  UID:                 ef3ecd39-c372-4f44-a2fe-cae940bf7a82
+  Resource Version:    1786
+  UID:                 a0618103-ef71-4b78-a01a-cf087018fd2c
 Spec:
   Description:  L3-L4 policy to restrict deathstar access to empire ships only
   Endpoint Selector:
@@ -215,76 +295,76 @@ Ship landed
 + echo 'List existing policy'
 List existing policy
 ++ kubectl -n kube-system get pods -l k8s-app=cilium -o 'jsonpath={.items[*].metadata.name}'
-+ pod_names='cilium-7qkmf cilium-8z2h4 cilium-9hlbb'
++ pod_names='cilium-87s7l cilium-94fp4 cilium-bf287'
 + for pod in $pod_names
-+ echo 'Policy for pod: cilium-7qkmf'
-Policy for pod: cilium-7qkmf
-+ kubectl -n kube-system exec cilium-7qkmf -- cilium-dbg endpoint list
++ echo 'Policy for pod: cilium-87s7l'
+Policy for pod: cilium-87s7l
++ kubectl -n kube-system exec cilium-87s7l -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+129        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.35    ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+194        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.254   ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+787        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
+                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
+                                                           reserved:host
+2458       Disabled           Disabled          4          reserved:health                                                                     10.0.0.6     ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-94fp4'
+Policy for pod: cilium-94fp4
++ kubectl -n kube-system exec cilium-94fp4 -- cilium-dbg endpoint list
 Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
 ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
            ENFORCEMENT        ENFORCEMENT
-905        Disabled           Disabled          4          reserved:health                                                                 10.0.2.58    ready
-1002       Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.239   ready
-                                                           k8s:class=deathstar
-                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
-                                                           k8s:io.kubernetes.pod.namespace=default
-                                                           k8s:org=empire
-1764       Disabled           Disabled          13669      k8s:app.kubernetes.io/name=tiefighter                                           10.0.2.202   ready
+368        Disabled           Disabled          65013      k8s:app.kubernetes.io/name=tiefighter                                           10.0.1.168   ready
                                                            k8s:class=tiefighter
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-2000       Disabled           Disabled          34944      k8s:app.kubernetes.io/name=xwing                                                10.0.2.244   ready
+885        Disabled           Disabled          18165      k8s:app.kubernetes.io/name=xwing                                                10.0.1.89    ready
                                                            k8s:class=xwing
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=alliance
-2045       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+1658       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
                                                            reserved:host
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-8z2h4'
-Policy for pod: cilium-8z2h4
-+ kubectl -n kube-system exec cilium-8z2h4 -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-181        Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.216   ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-669        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
-                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
-                                                           reserved:host
-1657       Disabled           Disabled          4          reserved:health                                                                     10.0.0.157   ready
-1808       Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.23    ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-9hlbb'
-Policy for pod: cilium-9hlbb
-+ kubectl -n kube-system exec cilium-9hlbb -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-242        Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
-                                                           reserved:host
-898        Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.97    ready
+3127       Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.68    ready
                                                            k8s:class=deathstar
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-1377       Disabled           Disabled          4          reserved:health                                                                 10.0.1.195   ready
+3311       Disabled           Disabled          4          reserved:health                                                                 10.0.1.94    ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-bf287'
+Policy for pod: cilium-bf287
++ kubectl -n kube-system exec cilium-bf287 -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+431        Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.254   ready
+                                                           k8s:class=deathstar
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=empire
+1303       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+                                                           reserved:host
+3275       Disabled           Disabled          4          reserved:health                                                                 10.0.2.221   ready
 + echo 'Apply policy'
 Apply policy
 + curl https://raw.githubusercontent.com/cilium/cilium/1.15.1/examples/minikube/sw_l3_l4_l7_policy.yaml
@@ -315,76 +395,76 @@ Error from server (AlreadyExists): error when creating "https://raw.githubuserco
 + echo 'Inspect updated policy'
 Inspect updated policy
 ++ kubectl -n kube-system get pods -l k8s-app=cilium -o 'jsonpath={.items[*].metadata.name}'
-+ pod_names='cilium-7qkmf cilium-8z2h4 cilium-9hlbb'
++ pod_names='cilium-87s7l cilium-94fp4 cilium-bf287'
 + for pod in $pod_names
-+ echo 'Policy for pod: cilium-7qkmf'
-Policy for pod: cilium-7qkmf
-+ kubectl -n kube-system exec cilium-7qkmf -- cilium-dbg endpoint list
++ echo 'Policy for pod: cilium-87s7l'
+Policy for pod: cilium-87s7l
++ kubectl -n kube-system exec cilium-87s7l -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+129        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.35    ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+194        Disabled           Disabled          15786      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.254   ready
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
+                                                           k8s:io.kubernetes.pod.namespace=kube-system
+                                                           k8s:k8s-app=kube-dns
+787        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
+                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
+                                                           reserved:host
+2458       Disabled           Disabled          4          reserved:health                                                                     10.0.0.6     ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-94fp4'
+Policy for pod: cilium-94fp4
++ kubectl -n kube-system exec cilium-94fp4 -- cilium-dbg endpoint list
 Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
 ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
            ENFORCEMENT        ENFORCEMENT
-905        Disabled           Disabled          4          reserved:health                                                                 10.0.2.58    ready
-1002       Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.239   ready
-                                                           k8s:class=deathstar
-                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
-                                                           k8s:io.kubernetes.pod.namespace=default
-                                                           k8s:org=empire
-1764       Disabled           Disabled          13669      k8s:app.kubernetes.io/name=tiefighter                                           10.0.2.202   ready
+368        Disabled           Disabled          65013      k8s:app.kubernetes.io/name=tiefighter                                           10.0.1.168   ready
                                                            k8s:class=tiefighter
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-2000       Disabled           Disabled          34944      k8s:app.kubernetes.io/name=xwing                                                10.0.2.244   ready
+885        Disabled           Disabled          18165      k8s:app.kubernetes.io/name=xwing                                                10.0.1.89    ready
                                                            k8s:class=xwing
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=alliance
-2045       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+1658       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
                                                            reserved:host
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-8z2h4'
-Policy for pod: cilium-8z2h4
-+ kubectl -n kube-system exec cilium-8z2h4 -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                                  IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-181        Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.216   ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-669        Disabled           Disabled          1          k8s:node-role.kubernetes.io/control-plane                                                        ready
-                                                           k8s:node.kubernetes.io/exclude-from-external-load-balancers
-                                                           reserved:host
-1657       Disabled           Disabled          4          reserved:health                                                                     10.0.0.157   ready
-1808       Disabled           Disabled          10295      k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=kube-system          10.0.0.23    ready
-                                                           k8s:io.cilium.k8s.policy.cluster=default
-                                                           k8s:io.cilium.k8s.policy.serviceaccount=coredns
-                                                           k8s:io.kubernetes.pod.namespace=kube-system
-                                                           k8s:k8s-app=kube-dns
-+ for pod in $pod_names
-+ echo 'Policy for pod: cilium-9hlbb'
-Policy for pod: cilium-9hlbb
-+ kubectl -n kube-system exec cilium-9hlbb -- cilium-dbg endpoint list
-Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
-           ENFORCEMENT        ENFORCEMENT
-242        Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
-                                                           reserved:host
-898        Enabled            Disabled          43264      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.97    ready
+3127       Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.1.68    ready
                                                            k8s:class=deathstar
                                                            k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
                                                            k8s:io.cilium.k8s.policy.cluster=default
                                                            k8s:io.cilium.k8s.policy.serviceaccount=default
                                                            k8s:io.kubernetes.pod.namespace=default
                                                            k8s:org=empire
-1377       Disabled           Disabled          4          reserved:health                                                                 10.0.1.195   ready
+3311       Disabled           Disabled          4          reserved:health                                                                 10.0.1.94    ready
++ for pod in $pod_names
++ echo 'Policy for pod: cilium-bf287'
+Policy for pod: cilium-bf287
++ kubectl -n kube-system exec cilium-bf287 -- cilium-dbg endpoint list
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS (source:key[=value])                                              IPv6   IPv4         STATUS
+           ENFORCEMENT        ENFORCEMENT
+431        Enabled            Disabled          37288      k8s:app.kubernetes.io/name=deathstar                                            10.0.2.254   ready
+                                                           k8s:class=deathstar
+                                                           k8s:io.cilium.k8s.namespace.labels.kubernetes.io/metadata.name=default
+                                                           k8s:io.cilium.k8s.policy.cluster=default
+                                                           k8s:io.cilium.k8s.policy.serviceaccount=default
+                                                           k8s:io.kubernetes.pod.namespace=default
+                                                           k8s:org=empire
+1303       Disabled           Disabled          1          k8s:node-role.kubernetes.io/worker=worker                                                    ready
+                                                           reserved:host
+3275       Disabled           Disabled          4          reserved:health                                                                 10.0.2.221   ready
 + kubectl describe ciliumnetworkpolicies
 Name:         rule1
 Namespace:    default
@@ -393,10 +473,10 @@ Annotations:  <none>
 API Version:  cilium.io/v2
 Kind:         CiliumNetworkPolicy
 Metadata:
-  Creation Timestamp:  2024-02-17T17:58:20Z
+  Creation Timestamp:  2024-02-18T17:22:35Z
   Generation:          1
-  Resource Version:    11547
-  UID:                 ef3ecd39-c372-4f44-a2fe-cae940bf7a82
+  Resource Version:    1786
+  UID:                 a0618103-ef71-4b78-a01a-cf087018fd2c
 Spec:
   Description:  L3-L4 policy to restrict deathstar access to empire ships only
   Endpoint Selector:

@@ -16,28 +16,33 @@ $vagrant ssh acm
 - Deploy kube cluster from ACM
 ```
 cd /vagrant/ansiblev2
-ansible-playbook -i ./inventory/inventory.ini -e @/vagrant/settings.yaml kube-master-setup.yml
+./install_kube.sh
+```
+- Validate that all pods including cilium are in running state
+```
+vagrant@master-node:~$ kubectl get pods,svc --all-namespaces -o wide
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE    IP           NODE            NOMINATED NODE   READINESS GATES
+kube-system   pod/cilium-87s7l                          1/1     Running   0          111s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/cilium-94fp4                          1/1     Running   0          106s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/cilium-bf287                          1/1     Running   0          106s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-dwgq2        1/1     Running   0          111s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/cilium-operator-684cb65b-f2tx7        1/1     Running   0          112s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-g9rvn              1/1     Running   0          72s    10.0.0.254   master-node     <none>           <none>
+kube-system   pod/coredns-5dd5756b68-p5c4p              1/1     Running   0          57s    10.0.0.35    master-node     <none>           <none>
+kube-system   pod/etcd-master-node                      1/1     Running   0          2m5s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-apiserver-master-node            1/1     Running   0          2m5s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-controller-manager-master-node   1/1     Running   0          2m5s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-proxy-hd9cq                      1/1     Running   0          106s   10.1.0.13    worker-node02   <none>           <none>
+kube-system   pod/kube-proxy-mm7rs                      1/1     Running   0          106s   10.1.0.12    worker-node01   <none>           <none>
+kube-system   pod/kube-proxy-xf7cc                      1/1     Running   0          111s   10.1.0.10    master-node     <none>           <none>
+kube-system   pod/kube-scheduler-master-node            1/1     Running   0          2m6s   10.1.0.10    master-node     <none>           <none>
+
+NAMESPACE     NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                  AGE    SELECTOR
+default       service/kubernetes    ClusterIP   172.17.0.1     <none>        443/TCP                  2m7s   <none>
+kube-system   service/hubble-peer   ClusterIP   172.17.51.27   <none>        443/TCP                  119s   k8s-app=cilium
+kube-system   service/kube-dns      ClusterIP   172.17.0.10    <none>        53/UDP,53/TCP,9153/TCP   2m5s   k8s-app=kube-dns
 ```
 
-
-# Pod installation/uinstallation using helm from ACM: (optional not needed for)
-```
-Installation steps:
-$vagrant ssh acm
-$cd /vagrant/helm
-$./install_pods.sh
-$vagrant ssh master
-$ kubectl get pods
-Pods should be listed
-
-Uninstallation steps:
-$vagrant ssh acm
-$cd /vagrant/helm
-$./uninstall_pods.sh
-$vagrant ssh master
-$ kubectl get pods
-Pods should not be listed
-```
 
 # Cilium use case1: L3-L7 rule
 https://docs.cilium.io/en/stable/gettingstarted/demo/
@@ -48,6 +53,7 @@ Playbook execution to see all in one shot:
 1. Connect to master
 $vagrant ssh master
 2. Run the demo
+$ cd /vagrant/cilium
 $ ./run_demo.sh
 ```
 
@@ -75,10 +81,6 @@ $ ./test_connection.sh
 $ ./cleanup_setup.sh
 
 ```
-
-
-
-
 
 
 # Vagrant cheatsheet:
@@ -129,7 +131,24 @@ $sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --apiserver-cert-extr
 
 
 
+# Pod installation/uinstallation using helm from ACM: (WIP)
+```
+Installation steps:
+$vagrant ssh acm
+$cd /vagrant/helm
+$./install_pods.sh
+$vagrant ssh master
+$ kubectl get pods
+Pods should be listed
 
+Uninstallation steps:
+$vagrant ssh acm
+$cd /vagrant/helm
+$./uninstall_pods.sh
+$vagrant ssh master
+$ kubectl get pods
+Pods should not be listed
+```
 # Cilium use case2: (WIP) 
 https://cilium.io/blog/2020/07/27/2020-07-27-multitenancy-network-security/
 ```
