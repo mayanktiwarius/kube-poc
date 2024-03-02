@@ -16,7 +16,10 @@ $vagrant ssh acm
 - Deploy kube cluster from ACM
 ```
 cd /vagrant/ansiblev2
+
 Pick one of them based on the requirement from below options:
+============================================================
+
 Option1: Calico:
 ./install_kube_calico.sh
 
