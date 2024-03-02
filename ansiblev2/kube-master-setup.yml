@@ -363,11 +363,13 @@
       tags: 
         - calico_vpp
 
-    - name: Create/Replace Calico tigera operatop
-      command: "kubectl apply -f {{ config_path }}/calico-vpp-tigera-operator.yaml"
+    - name: Create/Replace Calico tigera operator
+      command: "kubectl create -f {{ config_path }}/calico-vpp-tigera-operator.yaml"
       become_user: vagrant
       tags: 
         - calico_vpp
+      # ignore_errors: yes
+
 
     - name: Download Calico tigera operator manifest
       get_url:
@@ -377,16 +379,17 @@
         - calico_vpp
 
     - name: Create/Replace Calico VPP dataplane
-      command: "kubectl apply -f {{ config_path }}/calico-vpp-data-plane.yaml"
+      command: "kubectl create -f {{ config_path }}/calico-vpp-data-plane.yaml"
       become_user: vagrant
       tags: 
         - calico_vpp
+      # ignore_errors: yes
 
-    - name: Create/Replace Calico Network Plugin
-      command: "kubectl apply -f {{ config_path }}/calico_vpp.yaml"
-      become_user: vagrant
-      tags: 
-        - calico_vpp
+    # - name: Create/Replace Calico Network Plugin
+    #   command: "kubectl create -f {{ config_path }}/calico-vpp.yaml"
+    #   become_user: vagrant
+    #   tags: 
+    #     - calico_vpp
 
     # - name: Upgrade Cilium Helm release with identityTracking configuration
     #   command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"

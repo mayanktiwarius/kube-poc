@@ -12,7 +12,7 @@ network:
 nodes:
   control:
     cpu: 2
-    memory: 2048
+    memory: 3072
   workers:
     count: 2
     cpu: 1
