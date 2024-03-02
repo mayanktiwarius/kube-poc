@@ -304,10 +304,12 @@
       args:
         executable: /bin/bash
 
-    # - name: Download Calico manifest
-    #   get_url:
-    #     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
-    #     dest: "{{ config_path }}/calico.yaml"
+    - name: Download Calico manifest
+      get_url:
+        url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ software.calico }}/manifests/calico.yaml"
+        dest: "{{ config_path }}/calico.yaml"
+      tags: 
+        - calico
 
     # - name: Check Kubernetes API server status
     #   shell: kubectl cluster-info
@@ -336,17 +338,55 @@
     #   pause:
     #     seconds: 15
 
-    # - name: Apply Calico Network Plugin
-    #   command: "kubectl apply -f {{ config_path }}/calico.yaml"
-    #   become_user: vagrant
+    - name: Apply Calico Network Plugin
+      command: "kubectl apply -f {{ config_path }}/calico.yaml"
+      become_user: vagrant
+      tags: 
+        - calico
 
     - name: Add Cilium Helm repository
       command: "helm repo add cilium https://helm.cilium.io/"
       become_user: vagrant
+      tags: 
+        - cilium
       
     - name: Install Cilium with Helm
       command: "helm install cilium cilium/cilium --version 1.15.0 --namespace kube-system"
       become_user: vagrant
+      tags: 
+        - cilium
+
+    - name: Download Calico tigera operator manifest
+      get_url:
+        url: "https://raw.githubusercontent.com/projectcalico/calico/{{ software.calico_vpp }}/manifests/tigera-operator.yaml"
+        dest: "{{ config_path }}/calico-vpp-tigera-operator.yaml"
+      tags: 
+        - calico_vpp
+
+    - name: Create/Replace Calico tigera operatop
+      command: "kubectl apply -f {{ config_path }}/calico-vpp-tigera-operator.yaml"
+      become_user: vagrant
+      tags: 
+        - calico_vpp
+
+    - name: Download Calico tigera operator manifest
+      get_url:
+        url: "https://raw.githubusercontent.com/projectcalico/vpp-dataplane/{{ software.calico_vpp_dataplane }}/yaml/calico/installation-default.yaml"
+        dest: "{{ config_path }}/calico-vpp-data-plane.yaml"
+      tags: 
+        - calico_vpp
+
+    - name: Create/Replace Calico VPP dataplane
+      command: "kubectl apply -f {{ config_path }}/calico-vpp-data-plane.yaml"
+      become_user: vagrant
+      tags: 
+        - calico_vpp
+
+    - name: Create/Replace Calico Network Plugin
+      command: "kubectl apply -f {{ config_path }}/calico_vpp.yaml"
+      become_user: vagrant
+      tags: 
+        - calico_vpp
 
     # - name: Upgrade Cilium Helm release with identityTracking configuration
     #   command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"

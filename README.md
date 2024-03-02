@@ -16,7 +16,14 @@ $vagrant ssh acm
 - Deploy kube cluster from ACM
 ```
 cd /vagrant/ansiblev2
-./install_kube.sh
+Calico:
+./install_kube_calico.sh
+Calico with VPP:
+./install_kube_calico_vpp.sh
+
+Cilium:
+./install_kube_cilium.sh
+
 ```
 - Validate that all pods including cilium are in running state
 ```

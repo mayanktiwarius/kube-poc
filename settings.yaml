@@ -26,5 +26,7 @@ software:
   box: bento/ubuntu-22.04
   calico: 3.25.0
   cilium: v0.15.21
+  calico_vpp: v3.27.2
+  calico_vpp_dataplane: v3.27.0
   kubernetes: 1.28.2-00
   os: xUbuntu_22.04
