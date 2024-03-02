@@ -16,12 +16,14 @@ $vagrant ssh acm
 - Deploy kube cluster from ACM
 ```
 cd /vagrant/ansiblev2
-Calico:
+Pick one of them based on the requirement from below options:
+Option1: Calico:
 ./install_kube_calico.sh
-Calico with VPP:
+
+Option2: Calico with VPP:
 ./install_kube_calico_vpp.sh
 
-Cilium:
+Option3: Cilium:
 ./install_kube_cilium.sh
 
 ```
