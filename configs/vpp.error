@@ -1,0 +1,152 @@
+Name:                 calico-vpp-node-rk5hl
+Namespace:            calico-vpp-dataplane
+Priority:             2000001000
+Priority Class Name:  system-node-critical
+Service Account:      calico-vpp-node-sa
+Node:                 worker-node02/10.1.0.13
+Start Time:           Sun, 03 Mar 2024 00:38:03 +0000
+Labels:               controller-revision-hash=7979c58d6f
+                      k8s-app=calico-vpp-node
+                      pod-template-generation=1
+Annotations:          <none>
+Status:               Running
+IP:                   10.1.0.13
+IPs:
+  IP:           10.1.0.13
+Controlled By:  DaemonSet/calico-vpp-node
+Containers:
+  agent:
+    Container ID:   cri-o://193179a4cdea764192cf9b2b52bd87e7ef8954b1516388fd7622eb507f183ab8
+    Image:          docker.io/calicovpp/agent:v3.27.0
+    Image ID:       1b79dd4820a320007c673900cbc6d5afed058436d0be7f5986a9fe40ca02d4a0
+    Port:           <none>
+    Host Port:      <none>
+    State:          Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Sun, 03 Mar 2024 00:38:24 +0000
+      Finished:     Sun, 03 Mar 2024 00:38:44 +0000
+    Ready:          False
+    Restart Count:  0
+    Requests:
+      cpu:  250m
+    Environment Variables from:
+      calico-vpp-config  ConfigMap  Optional: false
+    Environment:
+      DATASTORE_TYPE:      kubernetes
+      WAIT_FOR_DATASTORE:  true
+      NODENAME:             (v1:spec.nodeName)
+      NAMESPACE:           calico-vpp-dataplane (v1:metadata.namespace)
+    Mounts:
+      /run/netns/ from netns (rw)
+      /var/lib/calico/felix-plugins from felix-plugins (rw)
+      /var/run/calico from var-run-calico (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-79cvq (ro)
+      /var/run/vpp from vpp-rundir (rw)
+  vpp:
+    Container ID:   cri-o://e8255caf7f031022345d0f3fec462e3cadcce0b772f9ae243f6828d7a351ec9e
+    Image:          docker.io/calicovpp/vpp:v3.27.0
+    Image ID:       d5a56ba61aed835c997aa13a0bb37ad162cd052021b8c69a2e00f6527db9cd00
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 03 Mar 2024 00:39:16 +0000
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:     500m
+      memory:  512Mi
+    Environment Variables from:
+      calico-vpp-config  ConfigMap  Optional: false
+    Environment:
+      DATASTORE_TYPE:      kubernetes
+      WAIT_FOR_DATASTORE:  true
+      NODENAME:             (v1:spec.nodeName)
+    Mounts:
+      /dev from devices (rw)
+      /etc/vpp from vpp-config (rw)
+      /host from host-root (rw)
+      /lib/firmware from lib-firmware (rw)
+      /run/netns/ from netns (rw)
+      /sys from hostsys (rw)
+      /var/lib/vpp from vpp-data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-79cvq (ro)
+      /var/run/vpp from vpp-rundir (rw)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             False 
+  ContainersReady   False 
+  PodScheduled      True 
+Volumes:
+  lib-firmware:
+    Type:          HostPath (bare host directory volume)
+    Path:          /lib/firmware
+    HostPathType:  
+  vpp-rundir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/run/vpp
+    HostPathType:  
+  vpp-data:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/vpp
+    HostPathType:  DirectoryOrCreate
+  vpp-config:
+    Type:          HostPath (bare host directory volume)
+    Path:          /etc/vpp
+    HostPathType:  
+  devices:
+    Type:          HostPath (bare host directory volume)
+    Path:          /dev
+    HostPathType:  
+  hostsys:
+    Type:          HostPath (bare host directory volume)
+    Path:          /sys
+    HostPathType:  
+  var-run-calico:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/run/calico
+    HostPathType:  
+  netns:
+    Type:          HostPath (bare host directory volume)
+    Path:          /run/netns
+    HostPathType:  
+  felix-plugins:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/calico/felix-plugins
+    HostPathType:  
+  host-root:
+    Type:          HostPath (bare host directory volume)
+    Path:          /
+    HostPathType:  
+  kube-api-access-79cvq:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 :NoSchedule op=Exists
+                             :NoExecute op=Exists
+                             CriticalAddonsOnly op=Exists
+                             node.kubernetes.io/disk-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/network-unavailable:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists
+                             node.kubernetes.io/pid-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/unreachable:NoExecute op=Exists
+                             node.kubernetes.io/unschedulable:NoSchedule op=Exists
+Events:
+  Type    Reason     Age                  From               Message
+  ----    ------     ----                 ----               -------
+  Normal  Scheduled  2m43s                default-scheduler  Successfully assigned calico-vpp-dataplane/calico-vpp-node-rk5hl to worker-node02
+  Normal  Pulling    2m42s                kubelet            Pulling image "docker.io/calicovpp/agent:v3.27.0"
+  Normal  Pulled     2m23s                kubelet            Successfully pulled image "docker.io/calicovpp/agent:v3.27.0" in 19.842s (19.843s including waiting)
+  Normal  Pulling    2m22s                kubelet            Pulling image "docker.io/calicovpp/vpp:v3.27.0"
+  Normal  Pulled     90s                  kubelet            Successfully pulled image "docker.io/calicovpp/vpp:v3.27.0" in 52.082s (52.084s including waiting)
+  Normal  Created    90s                  kubelet            Created container vpp
+  Normal  Started    90s                  kubelet            Started container vpp
+  Normal  Pulled     88s                  kubelet            Container image "docker.io/calicovpp/agent:v3.27.0" already present on machine
+  Normal  Created    86s (x2 over 2m22s)  kubelet            Created container agent
+  Normal  Started    85s (x2 over 2m22s)  kubelet            Started container agent
