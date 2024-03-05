@@ -188,7 +188,8 @@
         - jq
 
     - name: Import GPG key for Kubernetes
-      shell: "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -"
+      #shell: "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -"
+      shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
 
 
     - name: Ensure file /etc/apt/sources.list.d/kubernetes.list exists (create if not)
@@ -200,7 +201,8 @@
       blockinfile:
         path: /etc/apt/sources.list.d/kubernetes.list
         block: |
-          deb https://apt.kubernetes.io/ kubernetes-xenial main
+          #deb https://apt.kubernetes.io/ kubernetes-xenial main
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
 
     - name: Update package lists again
       apt:
