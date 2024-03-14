@@ -188,7 +188,8 @@
         - jq
 
     - name: Import GPG key for Kubernetes
-      shell: "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -"
+      #shell: "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -"
+      shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
 
 
     - name: Ensure file /etc/apt/sources.list.d/kubernetes.list exists (create if not)
@@ -200,7 +201,8 @@
       blockinfile:
         path: /etc/apt/sources.list.d/kubernetes.list
         block: |
-          deb https://apt.kubernetes.io/ kubernetes-xenial main
+          #deb https://apt.kubernetes.io/ kubernetes-xenial main
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
 
     - name: Update package lists again
       apt:
@@ -338,6 +340,18 @@
 
     # - name: Apply Calico Network Plugin
     #   command: "kubectl apply -f {{ config_path }}/calico.yaml"
+    #   become_user: vagrant
+
+    - name: Add Cilium Helm repository
+      command: "helm repo add cilium https://helm.cilium.io/"
+      become_user: vagrant
+      
+    - name: Install Cilium with Helm
+      command: "helm install cilium cilium/cilium --version 1.15.0 --namespace kube-system"
+      become_user: vagrant
+
+    # - name: Upgrade Cilium Helm release with identityTracking configuration
+    #   command: helm upgrade cilium cilium/cilium --reuse-values --set global.identityTracking="k8s"
     #   become_user: vagrant
 
     - name: Configure Kubernetes for vagrant user

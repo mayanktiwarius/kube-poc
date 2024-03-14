@@ -1,20 +1,19 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: {{ include "nginxstateful.fullname" . }}
+  name: {{ include "nginxchaosdeployment.fullname" . }}
   labels:
-    {{- include "nginxstateful.labels" . | nindent 4 }}
+    {{- include "nginxchaosdeployment.labels" . | nindent 4 }}
     {{- with .Values.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  serviceName: "{{ .Release.Name }}-headless"
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "nginxstateful.selectorLabels" . | nindent 6 }}
+      {{- include "nginxchaosdeployment.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -22,13 +21,16 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "nginxstateful.selectorLabels" . | nindent 8 }}
+        {{- include "nginxchaosdeployment.selectorLabels" . | nindent 8 }}
+        {{- with .Values.selectorLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "nginxstateful.serviceAccountName" . }}
+      serviceAccountName: {{ include "nginxchaosdeployment.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

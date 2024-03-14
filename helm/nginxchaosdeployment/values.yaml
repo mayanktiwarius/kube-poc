@@ -1,4 +1,4 @@
-# Default values for nginxstateful.
+# Default values for nginxchaosdeployment.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -8,7 +8,7 @@ image:
   repository: nginx
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -39,7 +39,7 @@ securityContext: {}
 service:
   type: NodePort
   port: 80
-  nodePort: 32000
+  nodePort: 32002
 
 ingress:
   enabled: false
@@ -57,7 +57,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: 
+resources:
   limits:
     cpu: "0.5"
     memory: "256Mi"
@@ -89,17 +89,23 @@ tolerations:
   tolerationSeconds: 30
 
 affinity: {}
-
 labels:
-  name: frontend
-  app: frontend
+  name: agent_of_chaos
+  app: agent_of_chaos
 
 
 selectorLabels:
-  name: frontend
-  app: frontend
+  name: agent_of_chaos
+  app: agent_of_chaos
+
 
 additionalContainers:
+  # - name: debug-container
+  #   image: alpine:latest
+  #   command: ["/bin/sh", "-c", "apk update && apk add --no-cache tcpdump busybox-extras && while true; do sleep 3600; done"]
+  # - name: debug-container
+  #   image: raesene/alpine-nettools:latest
+  #   command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
   - name: debug-container
     image: nicolaka/netshoot:latest
     securityContext:
